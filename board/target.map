@@ -1,7 +1,7 @@
 Archive member included to satisfy reference by file (symbol)
 
 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
-                              /tmp/cchpvQ8D.o (scale_init)
+                              /tmp/cc6cSSdh.o (scale_init)
 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
                               /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o) (scale_conf)
 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
@@ -9,12 +9,48 @@ Archive member included to satisfy reference by file (symbol)
 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
                               (__irq_table)
 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
-                              /tmp/cchpvQ8D.o (memcmp)
+                              /tmp/cc6cSSdh.o (memcmp)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+                              /tmp/cc6cSSdh.o (gettimeofday)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o) (_gettimeofday_r)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o) (_impure_ptr)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o) (errno)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o) (_free_r)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o) (__malloc_current_mallinfo)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o) (__malloc_lock)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o) (_sbrk_r)
+/opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                              /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o) (__retarget_lock_acquire_recursive)
 
 Allocating common symbols
 Common symbol       size              file
 
+__lock___atexit_recursive_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___arc4random_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+errno               0x4               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
 scale_conf          0x4               /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
+__lock___env_recursive_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___sinit_recursive_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___malloc_recursive_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___at_quick_exit_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___dd_hash_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___tz_mutex   0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+__lock___sfp_recursive_mutex
+                    0x1               /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
 
 Memory Configuration
 
@@ -25,7 +61,7 @@ ram              0x0000000010000000 0x0000000000002000 xrw
 
 Linker script and memory map
 
-LOAD /tmp/cchpvQ8D.o
+LOAD /tmp/cc6cSSdh.o
 LOAD /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a
 START GROUP
 LOAD /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7-m/libgcc.a
@@ -33,7 +69,7 @@ LOAD /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/.
 END GROUP
                 0x0000000000000000                . = 0x0
 
-.text           0x0000000000000000     0x202c
+.text           0x0000000000000000     0x2950
                 0x0000000000000000                __head_text = .
  *(.data.__irq_handler)
  .data.__irq_handler
@@ -45,84 +81,164 @@ END GROUP
                 0x0000000000000040                __irq_handler_nul
                 0x0000000000000042                __irq_handler_rst
  *(.text*)
- .text          0x0000000000000088      0x360 /tmp/cchpvQ8D.o
+ .text          0x0000000000000088      0x368 /tmp/cc6cSSdh.o
                 0x0000000000000088                U8_TO_U32_LE_ROW
                 0x00000000000000a4                aes_enc_exp_step
                 0x0000000000000114                U32_TO_U8_LE_ROW
                 0x0000000000000126                octetstr_rd
                 0x0000000000000152                octetstr_wr
-                0x0000000000000178                aes_init
-                0x000000000000017a                aes
- .text.startup  0x00000000000003e8      0x190 /tmp/cchpvQ8D.o
-                0x00000000000003e8                main
- .text          0x0000000000000578      0x4cc /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
-                0x0000000000000578                scale_init
-                0x000000000000081c                scale_delay_us
-                0x0000000000000838                scale_delay_ms
-                0x0000000000000850                scale_tsc
-                0x0000000000000860                scale_gpio_rd
-                0x000000000000089c                scale_gpio_wr
-                0x00000000000008ec                scale_uart_rd_avail
-                0x00000000000008fc                scale_uart_wr_avail
-                0x000000000000090c                scale_uart_rd
-                0x0000000000000924                scale_uart_wr
-                0x000000000000093c                scale_i2c_fsm
-                0x0000000000000a30                scale_i2c_rd
-                0x0000000000000a3a                scale_i2c_wr
- .text          0x0000000000000a44        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
- .text          0x0000000000000a44        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
- .text.lpc13xx  0x0000000000000a44        0x8 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
-                0x0000000000000a44                lpc13xx_irq_enable
-                0x0000000000000a48                lpc13xx_irq_unable
- .text          0x0000000000000a4c        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
- .text.__start  0x0000000000000a4c        0xa /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
-                0x0000000000000a4c                __start
- .text          0x0000000000000a56        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
- *fill*         0x0000000000000a56        0x2 
- .text.memcmp   0x0000000000000a58       0x64 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
-                0x0000000000000a58                memcmp
+                0x0000000000000178                ul_to_octetstr
+                0x000000000000017e                aes_init
+                0x0000000000000180                aes
+ .text.startup  0x00000000000003f0      0x1b4 /tmp/cc6cSSdh.o
+                0x00000000000003f0                main
+ .text          0x00000000000005a4      0x4cc /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
+                0x00000000000005a4                scale_init
+                0x0000000000000848                scale_delay_us
+                0x0000000000000864                scale_delay_ms
+                0x000000000000087c                scale_tsc
+                0x000000000000088c                scale_gpio_rd
+                0x00000000000008c8                scale_gpio_wr
+                0x0000000000000918                scale_uart_rd_avail
+                0x0000000000000928                scale_uart_wr_avail
+                0x0000000000000938                scale_uart_rd
+                0x0000000000000950                scale_uart_wr
+                0x0000000000000968                scale_i2c_fsm
+                0x0000000000000a5c                scale_i2c_rd
+                0x0000000000000a66                scale_i2c_wr
+ .text          0x0000000000000a70        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
+ .text          0x0000000000000a70        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
+ .text.lpc13xx  0x0000000000000a70        0x8 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
+                0x0000000000000a70                lpc13xx_irq_enable
+                0x0000000000000a74                lpc13xx_irq_unable
+ .text          0x0000000000000a78        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
+ .text.__start  0x0000000000000a78        0xa /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
+                0x0000000000000a78                __start
+ .text          0x0000000000000a82        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ *fill*         0x0000000000000a82        0x2 
+ .text.memcmp   0x0000000000000a84       0x64 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+                0x0000000000000a84                memcmp
+ .text          0x0000000000000ae8        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+ .text.gettimeofday
+                0x0000000000000ae8       0x10 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+                0x0000000000000ae8                gettimeofday
+ .text          0x0000000000000af8        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+ .text._gettimeofday_r
+                0x0000000000000af8       0x28 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+                0x0000000000000af8                _gettimeofday_r
+ .text          0x0000000000000b20        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+ .text          0x0000000000000b20        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+ .text.cleanup_glue
+                0x0000000000000b20       0x28 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+                0x0000000000000b20                cleanup_glue
+ .text._reclaim_reent
+                0x0000000000000b48       0x88 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+                0x0000000000000b48                _reclaim_reent
+ .text          0x0000000000000bd0        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+ .text._malloc_trim_r
+                0x0000000000000bd0       0xa0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+                0x0000000000000bd0                _malloc_trim_r
+ .text._free_r  0x0000000000000c70      0x1e8 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+                0x0000000000000c70                _free_r
+ .text          0x0000000000000e58        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+ .text._malloc_r
+                0x0000000000000e58      0x524 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000000000e58                _malloc_r
+ .text          0x000000000000137c        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+ .text.__malloc_lock
+                0x000000000000137c        0xc /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+                0x000000000000137c                __malloc_lock
+ .text.__malloc_unlock
+                0x0000000000001388        0xc /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+                0x0000000000001388                __malloc_unlock
+ .text          0x0000000000001394        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+ .text._sbrk_r  0x0000000000001394       0x24 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+                0x0000000000001394                _sbrk_r
+ .text          0x00000000000013b8        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+ .text.__retarget_lock_init
+                0x00000000000013b8        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013b8                __retarget_lock_init
+ .text.__retarget_lock_init_recursive
+                0x00000000000013bc        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013bc                __retarget_lock_init_recursive
+ .text.__retarget_lock_close
+                0x00000000000013c0        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013c0                __retarget_lock_close
+ .text.__retarget_lock_close_recursive
+                0x00000000000013c4        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013c4                __retarget_lock_close_recursive
+ .text.__retarget_lock_acquire
+                0x00000000000013c8        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013c8                __retarget_lock_acquire
+ .text.__retarget_lock_acquire_recursive
+                0x00000000000013cc        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013cc                __retarget_lock_acquire_recursive
+ .text.__retarget_lock_try_acquire
+                0x00000000000013d0        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013d0                __retarget_lock_try_acquire
+ .text.__retarget_lock_try_acquire_recursive
+                0x00000000000013d4        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013d4                __retarget_lock_try_acquire_recursive
+ .text.__retarget_lock_release
+                0x00000000000013d8        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013d8                __retarget_lock_release
+ .text.__retarget_lock_release_recursive
+                0x00000000000013dc        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000000013dc                __retarget_lock_release_recursive
  *(.text.*)
  *(.rodata*)
- .rodata        0x0000000000000abc     0x156e /tmp/cchpvQ8D.o
-                0x0000000000000abc                AES_ENC_TBOX_4
-                0x0000000000000ebc                AES_RC
-                0x0000000000000fbc                AES_ENC_TBOX_0
-                0x00000000000013bc                AES_ENC_TBOX_3
-                0x00000000000017bc                AES_ENC_TBOX_1
-                0x0000000000001bbc                AES_ENC_TBOX_2
+ .rodata        0x00000000000013e0     0x156a /tmp/cc6cSSdh.o
+                0x00000000000013e0                AES_ENC_TBOX_4
+                0x00000000000017e0                AES_RC
+                0x00000000000018e0                AES_ENC_TBOX_0
+                0x0000000000001ce0                AES_ENC_TBOX_3
+                0x00000000000020e0                AES_ENC_TBOX_1
+                0x00000000000024e0                AES_ENC_TBOX_2
+ *fill*         0x000000000000294a        0x2 
+ .rodata._global_impure_ptr
+                0x000000000000294c        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+                0x000000000000294c                _global_impure_ptr
  *(.rodata.*)
-                0x000000000000202c                . = ALIGN (0x4)
- *fill*         0x000000000000202a        0x2 
-                0x000000000000202c                __foot_text = .
+                0x0000000000002950                . = ALIGN (0x4)
+                0x0000000000002950                __foot_text = .
 
-.glue_7         0x000000000000202c        0x0
- .glue_7        0x000000000000202c        0x0 linker stubs
+.glue_7         0x0000000000002950        0x0
+ .glue_7        0x0000000000002950        0x0 linker stubs
 
-.glue_7t        0x000000000000202c        0x0
- .glue_7t       0x000000000000202c        0x0 linker stubs
+.glue_7t        0x0000000000002950        0x0
+ .glue_7t       0x0000000000002950        0x0 linker stubs
 
-.vfp11_veneer   0x000000000000202c        0x0
- .vfp11_veneer  0x000000000000202c        0x0 linker stubs
+.vfp11_veneer   0x0000000000002950        0x0
+ .vfp11_veneer  0x0000000000002950        0x0 linker stubs
 
-.v4_bx          0x000000000000202c        0x0
- .v4_bx         0x000000000000202c        0x0 linker stubs
+.v4_bx          0x0000000000002950        0x0
+ .v4_bx         0x0000000000002950        0x0 linker stubs
 
-.iplt           0x000000000000202c        0x0
- .iplt          0x000000000000202c        0x0 /tmp/cchpvQ8D.o
+.iplt           0x0000000000002950        0x0
+ .iplt          0x0000000000002950        0x0 /tmp/cc6cSSdh.o
 
-.rel.dyn        0x000000000000202c        0x0
- .rel.iplt      0x000000000000202c        0x0 /tmp/cchpvQ8D.o
+.rel.dyn        0x0000000000002950        0x0
+ .rel.iplt      0x0000000000002950        0x0 /tmp/cc6cSSdh.o
 
-.data           0x0000000010000000       0x2c load address 0x0000000000002030
+.data           0x0000000010000000      0x868 load address 0x0000000000002950
                 0x0000000010000000                __head_data = .
  *(.data)
- .data          0x0000000010000000        0x0 /tmp/cchpvQ8D.o
+ .data          0x0000000010000000        0x0 /tmp/cc6cSSdh.o
  .data          0x0000000010000000        0x4 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
                 0x0000000010000000                SCALE_CONF
  .data          0x0000000010000004        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
  .data          0x0000000010000004        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
  .data          0x0000000010000004        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
  .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+ .data          0x0000000010000004        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
  *(.data.*)
  .data.lpc13xx  0x0000000010000004       0x28 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
                 0x0000000010000004                LPC13XX_SYSCON
@@ -135,34 +251,81 @@ END GROUP
                 0x0000000010000020                LPC13XX_I2C
                 0x0000000010000024                LPC13XX_FMC
                 0x0000000010000028                LPC13XX_SYSTICK
-                0x000000001000002c                . = ALIGN (0x4)
-                0x000000001000002c                __foot_data = .
+ .data._impure_ptr
+                0x000000001000002c        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+                0x000000001000002c                _impure_ptr
+ .data.impure_data
+                0x0000000010000030      0x428 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+ .data.__malloc_av_
+                0x0000000010000458      0x408 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000010000458                __malloc_av_
+ .data.__malloc_sbrk_base
+                0x0000000010000860        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000010000860                __malloc_sbrk_base
+ .data.__malloc_trim_threshold
+                0x0000000010000864        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000010000864                __malloc_trim_threshold
+                0x0000000010000868                . = ALIGN (0x4)
+                0x0000000010000868                __foot_data = .
 
-.igot.plt       0x000000001000002c        0x0 load address 0x000000000000205c
- .igot.plt      0x000000001000002c        0x0 /tmp/cchpvQ8D.o
+.igot.plt       0x0000000010000868        0x0 load address 0x00000000000031b8
+ .igot.plt      0x0000000010000868        0x0 /tmp/cc6cSSdh.o
 
-.bss            0x0000000010000030        0x4 load address 0x0000000000002060
-                0x0000000010000030                __head_bss = .
+.bss            0x0000000010000870       0x5d load address 0x00000000000031c0
+                0x0000000010000870                __head_bss = .
  *(.bss)
- .bss           0x0000000010000030        0x0 /tmp/cchpvQ8D.o
- .bss           0x0000000010000030        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
- .bss           0x0000000010000030        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
- .bss           0x0000000010000030        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
- .bss           0x0000000010000030        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
- .bss           0x0000000010000030        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ .bss           0x0000000010000870        0x0 /tmp/cc6cSSdh.o
+ .bss           0x0000000010000870        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
+ .bss           0x0000000010000870        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
+ .bss           0x0000000010000870        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(lpc13xx.o)
+ .bss           0x0000000010000870        0x0 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+ .bss           0x0000000010000870        0x0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
  *(.bss.*)
-                0x0000000010000030                . = ALIGN (0x4)
-                0x0000000010000030                __foot_bss = .
- COMMON         0x0000000010000030        0x4 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
-                0x0000000010000030                scale_conf
+ .bss.__malloc_current_mallinfo
+                0x0000000010000870       0x28 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000010000870                __malloc_current_mallinfo
+ .bss.__malloc_max_sbrked_mem
+                0x0000000010000898        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x0000000010000898                __malloc_max_sbrked_mem
+ .bss.__malloc_max_total_mem
+                0x000000001000089c        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x000000001000089c                __malloc_max_total_mem
+ .bss.__malloc_top_pad
+                0x00000000100008a0        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+                0x00000000100008a0                __malloc_top_pad
+                0x00000000100008a4                . = ALIGN (0x4)
+                0x00000000100008a4                __foot_bss = .
+ COMMON         0x00000000100008a4        0x4 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
+                0x00000000100008a4                scale_conf
+ COMMON         0x00000000100008a8        0x4 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+                0x00000000100008a8                errno
+ COMMON         0x00000000100008ac       0x21 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
+                0x00000000100008ac                __lock___atexit_recursive_mutex
+                0x00000000100008b0                __lock___arc4random_mutex
+                0x00000000100008b4                __lock___env_recursive_mutex
+                0x00000000100008b8                __lock___sinit_recursive_mutex
+                0x00000000100008bc                __lock___malloc_recursive_mutex
+                0x00000000100008c0                __lock___at_quick_exit_mutex
+                0x00000000100008c4                __lock___dd_hash_mutex
+                0x00000000100008c8                __lock___tz_mutex
+                0x00000000100008cc                __lock___sfp_recursive_mutex
                 [!provide]                        PROVIDE (__load_text, LOADADDR (.text))
-                0x0000000000002030                PROVIDE (__load_data, LOADADDR (.data))
-                0x0000000000002060                PROVIDE (__load_bss, LOADADDR (.bss))
+                0x0000000000002950                PROVIDE (__load_data, LOADADDR (.data))
+                0x00000000000031c0                PROVIDE (__load_bss, LOADADDR (.bss))
                 0x0000000010002000                PROVIDE (__tos, (ORIGIN (ram) + LENGTH (ram)))
 OUTPUT(target.elf elf32-littlearm)
 
 .comment        0x0000000000000000       0x7e
- .comment       0x0000000000000000       0x7e /tmp/cchpvQ8D.o
+ .comment       0x0000000000000000       0x7e /tmp/cc6cSSdh.o
                                          0x7f (size before relaxing)
  .comment       0x000000000000007e       0x7f /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
  .comment       0x000000000000007e       0x7f /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(bsp.o)
@@ -170,7 +333,7 @@ OUTPUT(target.elf elf32-littlearm)
 .ARM.attributes
                 0x0000000000000000       0x31
  .ARM.attributes
-                0x0000000000000000       0x33 /tmp/cchpvQ8D.o
+                0x0000000000000000       0x33 /tmp/cc6cSSdh.o
  .ARM.attributes
                 0x0000000000000033       0x33 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(scale.o)
  .ARM.attributes
@@ -181,6 +344,32 @@ OUTPUT(target.elf elf32-littlearm)
                 0x00000000000000ba       0x21 /home/an20421/applied_crypto/scale-hw/build/lpc1313fbd48/lib/libscale.a(crt0.o)
  .ARM.attributes
                 0x00000000000000db       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ .ARM.attributes
+                0x0000000000000108       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+ .ARM.attributes
+                0x0000000000000135       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+ .ARM.attributes
+                0x0000000000000162       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-impure.o)
+ .ARM.attributes
+                0x000000000000018f       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+ .ARM.attributes
+                0x00000000000001bc       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+ .ARM.attributes
+                0x00000000000001e9       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+ .ARM.attributes
+                0x0000000000000216       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+ .ARM.attributes
+                0x0000000000000243       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+ .ARM.attributes
+                0x0000000000000270       0x2d /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)
 
-.debug_frame    0x0000000000000000       0x38
+.debug_frame    0x0000000000000000      0x2c4
  .debug_frame   0x0000000000000000       0x38 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-memcmp.o)
+ .debug_frame   0x0000000000000038       0x20 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sysgettod.o)
+ .debug_frame   0x0000000000000058       0x2c /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-gettimeofdayr.o)
+ .debug_frame   0x0000000000000084       0x68 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-reent.o)
+ .debug_frame   0x00000000000000ec       0x80 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-freer.o)
+ .debug_frame   0x000000000000016c       0x4c /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mallocr.o)
+ .debug_frame   0x00000000000001b8       0x30 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-mlock.o)
+ .debug_frame   0x00000000000001e8       0x2c /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-sbrkr.o)
+ .debug_frame   0x0000000000000214       0xb0 /opt/gcc-arm-none-eabi/7-2017-q4-major/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7-m/libc.a(lib_a-lock.o)

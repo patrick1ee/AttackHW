@@ -612,7 +612,7 @@ void U32_TO_U8_LE_ROW( uint8_t* d, aes_gf28_col_t s, int i) {
   d[i + 3] = (s >> 24) & 0x000000FF;
 }
 
-/* Key exapnsion */
+/* Key exapansion */
 void aes_enc_exp_step( aes_gf28_col_t* rp, const uint8_t* k ) {
 
   for( int i = 0; i < ( NK ); i++ ) {
