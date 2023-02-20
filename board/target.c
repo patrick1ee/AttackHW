@@ -249,7 +249,7 @@ const aes_gf28_col_t AES_ENC_TBOX_4[256] = {
   t_1 = rkp[1] ^ t_1;        \
   t_2 = rkp[2] ^ t_2;        \
   t_3 = rkp[3] ^ t_3;        \
-  rkp += NB;                 \
+  rkp += SIZEOF_BLK / 4;                 \
 }
 
 /**
@@ -272,7 +272,7 @@ const aes_gf28_col_t AES_ENC_TBOX_4[256] = {
                  ( AES_ENC_TBOX_1[ ( t_0 >>  8 ) & 0xFF] ) ^ \
                  ( AES_ENC_TBOX_2[ ( t_1 >> 16 ) & 0xFF] ) ^ \
                  ( AES_ENC_TBOX_3[ ( t_2 >> 24 ) & 0xFF] );  \
-  rkp += NB; t_0 = t_4; t_1 = t_5; t_2 = t_6; t_3 = t_7;     \
+  rkp += SIZEOF_BLK / 4; t_0 = t_4; t_1 = t_5; t_2 = t_6; t_3 = t_7;     \
 }
 
 /**
@@ -295,7 +295,7 @@ const aes_gf28_col_t AES_ENC_TBOX_4[256] = {
                  ( AES_ENC_TBOX_4[ ( t_0 >>  8 ) & 0xFF] & 0x0000FF00) ^ \
                  ( AES_ENC_TBOX_4[ ( t_1 >> 16 ) & 0xFF] & 0x00FF0000) ^ \
                  ( AES_ENC_TBOX_4[ ( t_2 >> 24 ) & 0xFF] & 0xFF000000);  \
-  rkp += NB; t_0 = t_4; t_1 = t_5; t_2 = t_6; t_3 = t_7;     \
+  rkp += SIZEOF_BLK / 4; t_0 = t_4; t_1 = t_5; t_2 = t_6; t_3 = t_7;     \
 }
 
 /** Produces full key expansion for required number of encryption rounds,
@@ -305,7 +305,7 @@ const aes_gf28_col_t AES_ENC_TBOX_4[256] = {
   * \param[in    ] k                 the initial key, consiting of an array of 16 8 bit integers (representing a 128 bit key)
   */
 void aes_enc_exp_step( aes_gf28_col_t* rp, const uint8_t* k ) {
-
+  int NK = SIZEOF_KEY / 4;  int NB = SIZEOF_BLK / 4;  int NR = 10;
   for( int i = 0; i < ( NK ); i++ ) {
     U8_TO_U32_LE_ROW (&(rp[i]), k, i * 4 );
   }
@@ -357,8 +357,18 @@ void U32_TO_U8_LE_ROW( uint8_t* d, aes_gf28_col_t s, int i) {
   * \return                           the         number of bytes          in r
   */
 
-int  octetstr_rd(       uint8_t* r, int n_r ) {
-  return 0;
+int octetstr_rd( uint8_t* r, int n_r ) {
+  int n_x = 0;
+  while(n_x < n_r){
+    uint8_t c = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+    if(c == '\r' || c == '\n'){
+      break;
+    }
+    r[n_x] = c;
+    n_x += 1;
+  }
+  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '\n');
+  return n_x;
 }
 
 /** Write   a sequence of bytes to   the UART, using a simple length-prefixed, 
@@ -369,7 +379,11 @@ int  octetstr_rd(       uint8_t* r, int n_r ) {
   */
 
 void octetstr_wr( const uint8_t* x, int n_x ) {
-  return;
+  for(int i = 0; i < n_x; i++){
+    scale_uart_wr(SCALE_UART_MODE_BLOCKING, x[i]);
+  }
+  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '\n');
+  return ;
 }
 
 /** Initialise an AES-128 encryption, e.g., expand the cipher key k into round
@@ -395,7 +409,8 @@ void aes_init(                               const uint8_t* k, const uint8_t* r 
   */
 
 void aes     ( uint8_t* c, const uint8_t* m, const uint8_t* k, const uint8_t* r ) {
-  aes_gf28_col_t rk[( NB * ( NR + 1 ) )];
+  int NR = 10;
+  aes_gf28_col_t rk[( ( SIZEOF_BLK / 4 ) * ( NR + 1 ) )];
   aes_gf28_col_t* rkp = rk;
   aes_gf28_col_t t_0, t_1, t_2, t_3, t_4, t_5, t_6, t_7;
 
@@ -468,7 +483,6 @@ int main( int argc, char* argv[] ) {
     if( 1 != octetstr_rd( cmd, 1 ) ) {
       break;
     }
-
     switch( cmd[ 0 ] ) {
       case COMMAND_INSPECT : {
         uint8_t t = SIZEOF_BLK; 
@@ -489,14 +503,39 @@ int main( int argc, char* argv[] ) {
         }
 
         aes_init(       k, r );
+        
+        //truct timeval stop, start;
 
         scale_gpio_wr( SCALE_GPIO_PIN_TRG,  true );
+        //gettimeofday(&start, NULL);
         aes     ( c, m, k, r );
+        //gettimeofday(&stop, NULL);
         scale_gpio_wr( SCALE_GPIO_PIN_TRG, false );
 
-                          octetstr_wr( c, SIZEOF_BLK );
-
+        octetstr_wr( c, SIZEOF_BLK );
         break;
+      }
+      case COMMAND_TEST : {
+        uint8_t k[ 16 ] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+                            0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C };
+        uint8_t m[ 16 ] = { 0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D,
+                            0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 };
+        uint8_t c[ 16 ] = { 0x39, 0x25, 0x84, 0x1D, 0x02, 0xDC, 0x09, 0xFB,
+                            0xDC, 0x11, 0x85, 0x97, 0x19, 0x6A, 0x0B, 0x32 };
+        uint8_t t[ 16 ];
+
+        scale_gpio_wr( SCALE_GPIO_PIN_TRG,  true );
+        aes(t, m, k, r);
+        scale_gpio_wr( SCALE_GPIO_PIN_TRG,  false );
+  
+        if( !memcmp( t, c, 16 * sizeof( uint8_t ) ) ) {
+          uint8_t x[ 20 ] = "AES.Enc( k, m ) == c";
+          octetstr_wr( x, 20 );
+        }
+        else{
+          uint8_t x[ 20 ] = "AES.Enc( k, m ) != c";
+          octetstr_wr( x, 20 );
+        }
       }
       default : {
         break;
