@@ -12,6 +12,10 @@ typedef uint16_t aes_poly_t;
 
 //464.9us
 
+/**
+  * Pre-computed values for the x-time function: 
+  * for a ∈ F 2 8 , computes a(x) · x (mod p(x)) (i.e., multiplies a by the indeterminate x).
+  */
 const aes_gf28_t XTIME[256] = {
   0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 
   0x10, 0x12, 0x14, 0x16, 0x18, 0x1A, 0x1C, 0x1E, 
@@ -47,6 +51,9 @@ const aes_gf28_t XTIME[256] = {
   0xEB, 0xE9, 0xEF, 0xED, 0xE3, 0xE1, 0xE7, 0xE5
 };
 
+/**
+  * Pre-computed values for the AES S-box function: 
+  */
 const aes_gf28_t SBOX[265] = {
   0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 
   0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76, 
@@ -82,6 +89,9 @@ const aes_gf28_t SBOX[265] = {
   0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
 
+/**
+  * Macro for the 'shift rows' step of AES
+  */
 #define AES_ENC_RND_ROW_STEP(a, b, c, d, e, f, g, h) { \
   aes_gf28_t __a1 = s[a];                              \
   aes_gf28_t __b1 = s[b];                              \
@@ -93,6 +103,9 @@ const aes_gf28_t SBOX[265] = {
   s[h] = __d1;                                         \
 }
 
+/**
+  * Macro for the 'mix columns' step of AES
+  */
 #define AES_ENC_RND_MIX_STEP(a, b, c, d) { \
   aes_gf28_t __a1 = s[a];                  \
   aes_gf28_t __b1 = s[b];                  \
@@ -116,8 +129,10 @@ const aes_gf28_t SBOX[265] = {
 }
 
 
-/** Takes a current, i-th AES-128 round key matrix rk and a round cxtimeonstant rc as input, and operates on
-  * it in-place to compute a next, (i + 1)-th AES-128 round key matrix as output. 
+/** Takes a current, i-th AES-128 round key matrix rk and a round constant rc as input, and operates on
+  * it in-place to compute a next, (i + 1)-th AES-128 round key matrix as output.
+  * \param[   out] rk (a pointer to) the current round key matrix
+  * \param[   out] rc (a pointer to) the current round constant
   */
 void aes_enc_exp_step( aes_gf28_t* rk, aes_gf28_t* rc ) {
   rk[0] = *rc ^ SBOX[rk[13]] ^ rk[0];
@@ -131,27 +146,41 @@ void aes_enc_exp_step( aes_gf28_t* rk, aes_gf28_t* rc ) {
 }
 
 
-/* The round function Add-RoundKey */
+/**
+  * The round function Add-RoundKey which xors the current state matrix with the current round key matrix.
+  * \param[   out]  s (a pointer to) the current state matrix
+  * \param[in    ] rk (a pointer to) the current round key matrix
+  */
 void aes_enc_rnd_key( aes_gf28_t* s, aes_gf28_t* rk ) {
     for(int i = 0; i < 16; i++){
       s[i] = s[i] ^ rk[i];
     }
 }
 
+/**
+  * The round function Substituion which makes use of the pre-computed S-BOX
+  * \param[   out]  s (a pointer to) the current state matrix
+  */
 void aes_enc_rnd_sub( aes_gf28_t* s ) {
   for(int i = 0; i < 16; i++){
     s[i] = SBOX[s[i]];
   }
 }
 
-/* The round function Shift-Rows for encryption */
+/**
+  * The round function for Shift Rows
+  * \param[   out]  s (a pointer to) the current state matrix
+  */
 void aes_enc_rnd_row( aes_gf28_t* s ) {
   AES_ENC_RND_ROW_STEP(1, 5, 9, 13, 13, 1, 5, 9);
   AES_ENC_RND_ROW_STEP(2, 6, 10, 14, 10, 14, 2, 6);
   AES_ENC_RND_ROW_STEP(3, 7, 11, 15, 7, 11, 15, 3);
 }
 
-/* The round function Mix-Columns for encryption */
+/**
+  * The round function for Mix Columns
+  * \param[   out]  s (a pointer to) the current state matrix
+  */
 void aes_enc_rnd_mix( aes_gf28_t* s ) {
   for(int i = 0; i < 4; i++, s += 4){
     AES_ENC_RND_MIX_STEP(0, 1, 2, 3);

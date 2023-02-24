@@ -76,6 +76,26 @@ def traces_st( f, t, s, M, C, T ) :
 
   fd.close()
 
+
+def get_hamming_weight( x ):
+  c = 0
+  while x:
+    c += 1
+    x &= x - 1
+  return c
+
+
+def generate_hypothesis_matrix( M ):
+  H = []
+  for m in M:
+    Hn = []
+    for j in range(0, 256):
+      a = 0
+      Hn.append(get_hamming_weight(a))
+    H.append(Hn)
+  return H
+    
+
 ## Attack implementation, as invoked from main after checking command line
 ## arguments.
 ##
