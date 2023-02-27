@@ -52,7 +52,7 @@ const aes_gf28_t XTIME[256] = {
 };
 
 /**
-  * Pre-computed values for the AES S-box function: 
+  * Pre-computed values for the AES S-box function
   */
 const aes_gf28_t SBOX[265] = {
   0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 
