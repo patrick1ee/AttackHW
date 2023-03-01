@@ -4,7 +4,7 @@
 # which can be found via http://creativecommons.org (and should be included as 
 # LICENSE.txt within the associated archive or repository).
 
-import numpy, struct, sys
+import  numpy, struct, sys
 
 
 ## Pre-computed values for the AES S-box function
@@ -84,9 +84,9 @@ def traces_ld( f ) :
   t = rd( '<I' )
   s = rd( '<I' )
 
-  M = numpy.zeros( ( t, 16 ), dtype = numpy.uint8 )
-  C = numpy.zeros( ( t, 16 ), dtype = numpy.uint8 )
-  T = numpy.zeros( ( t,  s ), dtype = numpy.int16 )
+  M =  numpy.zeros( ( t, 16 ), dtype =  numpy.uint8 )
+  C =  numpy.zeros( ( t, 16 ), dtype =  numpy.uint8 )
+  T =  numpy.zeros( ( t,  s ), dtype =  numpy.int16 )
 
   for i in range( t ) :
     for j in range( 16 ) :
@@ -176,31 +176,67 @@ def get_col_mean(C, j, t):
   return mean / t
 
 
-def get_correlation_at_point(R, H, R_col_mean, H_row_mean, t, i, j):
-  HR = 0
-  HS = 0
-  RS = 0
+def numpy_pearson_cor(x, y):
+  xv = x -  numpy.mean(x,axis=0)
+  yv = y -  numpy.mean(y,axis=0)
+  xvss =  numpy.sum(xv * xv,axis=0)
+  yvss =  numpy.sum(yv * yv,axis=0)
+  result =  numpy.matmul( numpy.transpose(xv), yv) /  numpy.sqrt( numpy.outer(xvss, yvss))
+  # bound the values to -1 to 1 in the event of precision issues
+  return  numpy.maximum( numpy.minimum(result, 1.0), -1.0)
+
+def get_correlation_at_point(R, H_col_norm, H_col_norm_sqrt, i, j):
+  R
   for x in range(0, t):
     HR += (H[x][i] - H_row_mean) * (R[x][j] - R_col_mean)
     HS += (H[x][i] - H_row_mean) ** 2
     RS += (R[x][j] - R_col_mean) ** 2
-  return HR / (numpy.sqrt(HS) * numpy.sqrt(RS))
+  return HR / ( numpy.sqrt(HS) *  numpy.sqrt(RS))
 
+def get_col_pearson_factors(X):
+  u = numpy.mean(X)
+  X_norm = []
+  X_norm_sqrt = 0
+  for x in X:
+    xn = x - u
+    X_norm.append(xn)
+    X_norm_sqrt += xn ** 2
+  return X_norm, numpy.sqrt(X_norm_sqrt)
+
+def get_col_pearson_factors_matrix(X, Y, i):
+  X = numpy.transpose(X)
+  Y = numpy.transpose(Y)
+  X_cpf = []
+  Y_cpf = []
+  
+  count = 0
+
+  for x in X:
+    X_cpf.append(get_col_pearson_factors(x))
+    count += 1
+    print_progress_bar(count + (i * 82816), 82816 * 16, prefix='Progress', suffix='Complete', length=50)
+  for y in Y:
+    Y_cpf.append(get_col_pearson_factors(y))
+    count += 1
+    print_progress_bar(count + (i * 82816), 82816 * 16, prefix='Progress', suffix='Complete', length=50)
+  return X_cpf, Y_cpf
 
 def disinguish_hypothesis( R, H, t, s, h, kb ):                                                                                                                                                                       
   C = []
-  R = numpy.transpose(R)
-  H = numpy.transpose(H)
+  R =  numpy.transpose(R)
+  H =  numpy.transpose(H)
+  R_col_
   max = (0, 0.0)
   for i in range(0, h):
     C_row = []
+    H_col_norm, H_col_norm_sqrt = get_col_pearson_factors(H[i])   
     for j in range(0, s):
-      corr = numpy.corrcoef(H[i], R[j])[0][1]
+      corr = numpy_pearson_cor(H[i], R[j])[0][0]
       C_row.append(abs(corr))
-      if corr > max[1]:
-        max = (i, corr)
+      #if corr > max[1]:
+      #  max = (i, corr)
+      a = 0
     C.append(C_row)
-    print_progress_bar(kb * h + i, 16 * h, prefix='Progress', suffix='Complete', length=50)
   return max
 
 ## Attack implementation, as invoked from main after checking command line
@@ -209,13 +245,17 @@ def disinguish_hypothesis( R, H, t, s, h, kb ):
 ## \param[in] argc number of command line arguments
 ## \param[in] argv           command line arguments
 
+#s = 82560
+
 def attack( argc, argv ) :
   t, s, M, C, T = traces_ld( '../stage2.dat' )
+  print(str(t) + ", " + str(s))
   K = []
   for i in range(0, 16):
     h, H = generate_hypothesis_matrix( M, i )
-    kb = disinguish_hypothesis( T, H, t, s, h, i )
-    K.append(kb[0])
+    H_cpf, R_cpf = get_col_pearson_factors_matrix(H, T, i)
+    #kb = disinguish_hypothesis( T, H, t, s, h, i )
+    #K.append(kb[0])
   print(K)
 
 if ( __name__ == '__main__' ) :
