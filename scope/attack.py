@@ -44,6 +44,28 @@ SBOX = [
   0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 ]
 
+
+## Pre-computed hamming weight values
+
+HW = [
+  0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
+  1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+  1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+  1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 
+  3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 
+  1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 
+  3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 
+  2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 
+  3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 
+  3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 
+  4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
+]
+
 def print_progress_bar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     """
     Call in a loop to create terminal progress bar
@@ -136,6 +158,28 @@ def traces_st( f, t, s, M, C, T ) :
 
   fd.close()
 
+
+
+def compress_traces( T, s, t ):
+  if t < 1:
+    return []
+
+  indices = []
+  TN = []
+  Tn = []
+  for i in range(1, s-1):
+    if abs(T[0][i]) > abs(T[0][i-1]) and abs(T[0][i]) > abs(T[0][i+1]):
+      Tn.append(T[0][i])
+      indices.append(i)
+  TN.append(Tn)
+  for i in range(1, t):
+    Tn = []
+    for index in indices:
+      Tn.append(T[i][index])
+    TN.append(Tn)
+  return TN, len(indices)
+
+
 ## Calculates the hamming weight of a given integer
 ## 
 ## \param[in] x the integer to process
@@ -151,15 +195,21 @@ def get_hamming_weight( x ):
 ## 
 ## \param[in] M array of messages to use
 
-def generate_hypothesis_matrix( M, b ):
+def generate_hypothesis_matrix( M, b, track=False ):
   h = 256
   H = []
+  count = 0
   for m in M:
     Hn = []
     for j in range(0, h):
       a = SBOX[m[b] ^ j]
-      Hn.append(get_hamming_weight(a))
+      Hn.append(HW[a])
     H.append(Hn)
+
+    if track:
+      count += 1
+      print_progress_bar(count, len(M), prefix='Progress', suffix='Complete', length=50)
+    
   return h, H
     
 
@@ -185,13 +235,6 @@ def numpy_pearson_cor(x, y):
   # bound the values to -1 to 1 in the event of precision issues
   return  numpy.maximum( numpy.minimum(result, 1.0), -1.0)
 
-def get_correlation_at_point(R, H_col_norm, H_col_norm_sqrt, i, j):
-  R
-  for x in range(0, t):
-    HR += (H[x][i] - H_row_mean) * (R[x][j] - R_col_mean)
-    HS += (H[x][i] - H_row_mean) ** 2
-    RS += (R[x][j] - R_col_mean) ** 2
-  return HR / ( numpy.sqrt(HS) *  numpy.sqrt(RS))
 
 def get_col_pearson_factors(X):
   u = numpy.mean(X)
@@ -203,39 +246,41 @@ def get_col_pearson_factors(X):
     X_norm_sqrt += xn ** 2
   return X_norm, numpy.sqrt(X_norm_sqrt)
 
-def get_col_pearson_factors_matrix(X, Y, i):
+def get_col_pearson_factors_matrix(X, track=False):
   X = numpy.transpose(X)
-  Y = numpy.transpose(Y)
   X_cpf = []
-  Y_cpf = []
-  
+  X_cpf_sqrt = []
   count = 0
-
   for x in X:
-    X_cpf.append(get_col_pearson_factors(x))
-    count += 1
-    print_progress_bar(count + (i * 82816), 82816 * 16, prefix='Progress', suffix='Complete', length=50)
-  for y in Y:
-    Y_cpf.append(get_col_pearson_factors(y))
-    count += 1
-    print_progress_bar(count + (i * 82816), 82816 * 16, prefix='Progress', suffix='Complete', length=50)
-  return X_cpf, Y_cpf
+    xn, xns = get_col_pearson_factors(x)
+    X_cpf.append(xn)
+    X_cpf_sqrt.append(xns)
+    if track:
+      count += 1
+      print_progress_bar(count, len(X), prefix='Progress', suffix='Complete', length=50)
+  return X_cpf, X_cpf_sqrt
 
-def disinguish_hypothesis( R, H, t, s, h, kb ):                                                                                                                                                                       
+def get_correlation_at_point(H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, i, j, t):
+  HR = 0
+  for x in range(0, t):
+    HR += H_cpf[i][x] * R_cpf[j][x]
+  return HR / ( H_cpf_sqrt[i] * R_cpf_sqrt[j])
+
+
+def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, track=False ):                                                                                                                                                                       
   C = []
   R =  numpy.transpose(R)
   H =  numpy.transpose(H)
-  R_col_
   max = (0, 0.0)
   for i in range(0, h):
-    C_row = []
-    H_col_norm, H_col_norm_sqrt = get_col_pearson_factors(H[i])   
+    C_row = [] 
     for j in range(0, s):
-      corr = numpy_pearson_cor(H[i], R[j])[0][0]
+      corr = get_correlation_at_point(H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, i, j, t)
       C_row.append(abs(corr))
-      #if corr > max[1]:
-      #  max = (i, corr)
-      a = 0
+      if corr > max[1]:
+        max = (i, corr)
+      if track:
+        print_progress_bar(i*s + j, h*s, prefix='Progress', suffix='Complete', length=50)
     C.append(C_row)
   return max
 
@@ -249,14 +294,23 @@ def disinguish_hypothesis( R, H, t, s, h, kb ):
 
 def attack( argc, argv ) :
   t, s, M, C, T = traces_ld( '../stage2.dat' )
-  print(str(t) + ", " + str(s))
+
+  T, s = compress_traces(T, s, t)
+
+  print('\nGenerating PCC data for trace matrix')
+  T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
+
   K = []
   for i in range(0, 16):
-    h, H = generate_hypothesis_matrix( M, i )
-    H_cpf, R_cpf = get_col_pearson_factors_matrix(H, T, i)
-    #kb = disinguish_hypothesis( T, H, t, s, h, i )
-    #K.append(kb[0])
+    print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
+    h, H = generate_hypothesis_matrix( M, i, True )
+    H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
+
+    print('\nPerformaing correlation analysis for byte ' + str(i + 1) + '/16')
+    kb = disinguish_hypothesis( T, H, t, s, h, i, H_cpf, H_cpf_sqrt, T_cpf, T_cpf_sqrt, True )
+    K.append(kb[0])
   print(K)
+
 
 if ( __name__ == '__main__' ) :
   attack( len( sys.argv ), sys.argv )
