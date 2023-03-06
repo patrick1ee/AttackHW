@@ -4,7 +4,7 @@
 # which can be found via http://creativecommons.org (and should be included as 
 # LICENSE.txt within the associated archive or repository).
 
-import  numpy, struct, sys
+import  argparse, binascii, numpy, select, serial, socket, string, struct, sys, time
 
 
 ## Pre-computed values for the AES S-box function
@@ -87,6 +87,136 @@ def print_progress_bar (iteration, total, prefix = '', suffix = '', decimals = 1
     if iteration == total: 
         print()
 
+## Convert a byte string (e.g., bytearray) into a sequence (or list) of bytes.
+## 
+## \param[in] x  a  byte  string
+## \return       a  byte  sequence
+
+def bytes2seq( x ) :
+  return            [ int( t ) for t in x ]
+
+## Convert a sequence (or list) of bytes into a byte string (e.g., bytearray).
+## 
+## \param[in] x  a  byte  sequence
+## \return       a  byte  string
+
+def seq2bytes( x ) :
+  return bytearray( [ int( t ) for t in x ] )
+
+## Convert a length-prefixed, hexadecimal octet string into a byte string.
+## 
+## \param[in] x  an octet string
+## \return       a  byte  string
+## \throw        ValueError if the length prefix and data do not match
+
+def octetstr2bytes( x ) :
+  t = x.split( ':' ) ; n = int( t[ 0 ], 16 ) ; x = binascii.a2b_hex( t[ 1 ] )
+
+  if ( n != len( x ) ) :
+    raise ValueError
+  else :
+    return x
+
+## Convert a byte string into a length-prefixed, hexadecimal octet string.
+## 
+## \param[in] x  an octet string
+## \return       a  byte  string
+
+def bytes2octetstr( x ) :
+  n = '{0:02X}'.format( len( x ) ) ; x = binascii.b2a_hex( x ).decode( 'ascii' ).upper()
+
+  return n + ':' + x
+
+## Open  (or start)  communication with SCALE development board.
+## Note the delay, which is intended to throttle (or slow down) communication
+## steps, e.g., allow the connection to "settle" before continuing, and hence
+## avoid certain classes of (transient) error.
+##
+## \return    fd a communication end-point
+
+def board_open() :
+  if   ( args.mode == 'uart'   ) :
+    fd = serial.Serial( port = args.uart, baudrate = 9600, bytesize = serial.EIGHTBITS, parity = serial.PARITY_NONE, stopbits = serial.STOPBITS_ONE, timeout = None )
+  elif ( args.mode == 'socket' ) :
+    fd = socket.socket( socket.AF_INET, socket.SOCK_STREAM ) ; fd.connect( ( args.socket_host, args.socket_port ) ) ; fd = fd.makefile( mode = 'rwb', buffering = 1024 )
+
+  time.sleep( args.throttle_open )
+
+  return fd
+
+## Close (or finish) communication with SCALE development board.
+##
+## \param[in] fd a communication end-point
+
+def board_close( fd ) :
+  fd.close()
+
+## Read  (or recieve) a string from SCALE development board, automatically 
+## managing CR-only EOL semantics.
+## Note the delay, which is intended to throttle (or slow down) communication
+## steps, e.g., allow the connection to "settle" before continuing, and hence
+## avoid certain classes of (transient) error.
+##
+## \param[in] fd a communication end-point
+## \return    r  a string (e.g., string, or bytearray)
+
+def board_rdln( fd    ) :
+  r = ''
+
+  while( True ):
+    t = fd.read( 1 ).decode( 'ascii' )
+
+    if ( args.debug ) :
+      print( 'rdln> {0:s} [{1:02X}]'.format( t if ( t.isprintable() ) else ' ', ord( t ) ) )
+
+    if( t == '\x0D' ) :
+      break
+    else:
+      r += t
+
+  if   ( args.force_upper ) :
+    r = r.upper()
+  elif ( args.force_lower ) :
+    r = r.lower()
+
+  if ( args.debug ) :
+    print( 'rdln> {0:s}'.format( r ) )
+
+  time.sleep( args.throttle_rd )
+
+  return r
+
+## Write (or send)    a string to   SCALE development board, automatically 
+## managing CR-only EOL semantics.
+## Note the delay, which is intended to throttle (or slow down) communication
+## steps, e.g., allow the connection to "settle" before continuing, and hence
+## avoid certain classes of (transient) error.
+##
+## \param[in] fd a communication end-point
+## \param[in] x  a string (e.g., string, or bytearray)
+
+def board_wrln( fd, x ) :
+  if   ( args.force_upper ) :
+    x = x.upper()
+  elif ( args.force_lower ) :
+    x = x.lower()
+
+  fd.write( ( x + '\x0D' ).encode( 'ascii' ) ) ; fd.flush()
+
+  if ( args.debug ) :
+    print( 'wrln> {0:s}'.format( x ) )
+
+  time.sleep( args.throttle_wr )
+
+## Client im ; x = args.data r = f_i( x )).
+
+def enc(m) :
+  fd = board_open()
+  board_wrln( fd, "1")
+  board_wrln( fd, m )
+  r = board_rdln( fd )
+  print(r)
+  board_close( fd )
 
 ## Load  a trace data set from an on-disk file.
 ## 
@@ -160,25 +290,26 @@ def traces_st( f, t, s, M, C, T ) :
 
 
 
-def compress_traces( T, s, t ):
-  if t < 1:
-    return []
+def truncate_trace_samples( T, t, start, end ):
+  T_t = []
+  for i in range(0, t):
+    T_s = []
+    for j in range(start, end):
+      T_s.append(T[i][j])
+    T_t.append(T_s)
+  return T_t, end - start
 
-  indices = []
-  TN = []
-  Tn = []
-  for i in range(1, s-1):
-    if abs(T[0][i]) > abs(T[0][i-1]) and abs(T[0][i]) > abs(T[0][i+1]):
-      Tn.append(T[0][i])
-      indices.append(i)
-  TN.append(Tn)
-  for i in range(1, t):
-    Tn = []
-    for index in indices:
-      Tn.append(T[i][index])
-    TN.append(Tn)
-  return TN, len(indices)
-
+def compress_trace_samples( T, t, s, n ):
+  T_t = []
+  for i in range(0, t):
+    T_s = []
+    for j in range(0, int(s / n)):
+      mean = 0
+      for k in range(0, n):
+        mean += T[i][j*n + k]
+      T_s.append(mean / n)
+    T_t.append(T_s)
+  return T_t, int(s / n)
 
 ## Calculates the hamming weight of a given integer
 ## 
@@ -295,7 +426,8 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
 def attack( argc, argv ) :
   t, s, M, C, T = traces_ld( '../stage2.dat' )
 
-  T, s = compress_traces(T, s, t)
+  T, s = truncate_trace_samples(T, t, 0, 20000)
+  T, s = compress_trace_samples(T, t, s, 5)
 
   print('\nGenerating PCC data for trace matrix')
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
@@ -306,11 +438,25 @@ def attack( argc, argv ) :
     h, H = generate_hypothesis_matrix( M, i, True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
 
-    print('\nPerformaing correlation analysis for byte ' + str(i + 1) + '/16')
+    print('\nPerforming correlation analysis for byte ' + str(i + 1) + '/16')
     kb = disinguish_hypothesis( T, H, t, s, h, i, H_cpf, H_cpf_sqrt, T_cpf, T_cpf_sqrt, True )
     K.append(kb[0])
   print(K)
 
 
 if ( __name__ == '__main__' ) :
+  '''parser = argparse.ArgumentParser()
+  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = True              )
+  parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'uart'             )
+  parser.add_argument( '--data',          dest = 'data',          type = str, action = 'store',                                 default = None               )
+  parser.add_argument( '--uart',          dest = 'uart',          type = str, action = 'store',                                 default = '/dev/scale-board' )
+  parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = None               )
+  parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = None               )
+  parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 1.0                )
+  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.5                )
+  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.5                )
+  parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
+  parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
+  args = parser.parse_args()
+  enc("1234567890123456")'''
   attack( len( sys.argv ), sys.argv )
