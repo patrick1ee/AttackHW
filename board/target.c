@@ -342,12 +342,8 @@ int main( int argc, char* argv[] ) {
 
         aes_init(       k, r );
         
-        //truct timeval stop, start;
-
         scale_gpio_wr( SCALE_GPIO_PIN_TRG,  true );
-        //gettimeofday(&start, NULL);
         aes     ( c, m, k, r );
-        //gettimeofday(&stop, NULL);
         scale_gpio_wr( SCALE_GPIO_PIN_TRG, false );
 
         octetstr_wr( c, SIZEOF_BLK );

@@ -413,6 +413,7 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
       if track:
         print_progress_bar(i*s + j, h*s, prefix='Progress', suffix='Complete', length=50)
     C.append(C_row)
+  
   return max
 
 ## Attack implementation, as invoked from main after checking command line
@@ -433,7 +434,7 @@ def attack( argc, argv ) :
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
 
   K = []
-  for i in range(0, 16):
+  for i in range(0, 1):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
     h, H = generate_hypothesis_matrix( M, i, True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
