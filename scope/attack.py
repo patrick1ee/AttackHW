@@ -6,6 +6,7 @@
 
 import  argparse, binascii, numpy, select, serial, socket, string, struct, sys, time
 
+import matplotlib.pyplot as plt
 
 ## Pre-computed values for the AES S-box function
 
@@ -289,6 +290,14 @@ def traces_st( f, t, s, M, C, T ) :
   fd.close()
 
 
+## Truncate each trace in a given matrix by removing samples outside a given range
+## 
+## \param[in] T a t-by-s  matrix of samples, i.e., the traces
+## \param[in] t the number of traces
+## \param[in] start the lower bound of the range to retain
+## \param[in] start the upper bound of the range to retain
+## \return    T a t-by-s  matrix of the truncated samples, i.e., the new traces
+## \return    s the new number of samples in each truncated trace
 
 def truncate_trace_samples( T, t, start, end ):
   T_t = []
@@ -297,7 +306,18 @@ def truncate_trace_samples( T, t, start, end ):
     for j in range(start, end):
       T_s.append(T[i][j])
     T_t.append(T_s)
-  return T_t, end - start
+  s = end - start
+  return T_t, s
+
+
+## Compress each trace in a given matrix by averaging out the samples over a given range
+## 
+## \param[in] T   a t-by-s  matrix of samples, i.e., the traces
+## \param[in] t   the number of traces
+## \param[in] s   the number of sample sin each trace
+## \param[in] n   the range over which to create averages over
+## \return    T_t a t-by-s  matrix of the compressed samples, i.e., the new traces
+## \return    sn  the new number of samples in each compressed trace
 
 def compress_trace_samples( T, t, s, n ):
   T_t = []
@@ -309,22 +329,15 @@ def compress_trace_samples( T, t, s, n ):
         mean += T[i][j*n + k]
       T_s.append(mean / n)
     T_t.append(T_s)
-  return T_t, int(s / n)
+    sn = int(s / n)
+  return T_t, sn
 
-## Calculates the hamming weight of a given integer
-## 
-## \param[in] x the integer to process
-
-def get_hamming_weight( x ):
-  c = 0
-  while x:
-    c += 1
-    x &= x - 1
-  return c
 
 ## Generates a hyptohesis for each possible byte of the encyption key, given a list of messages
 ## 
-## \param[in] M array of messages to use
+## \param[in] M     array of messages to use
+## \param[in] b     integer representing the hypothetical key byte
+## \param[in] track boolean determining whether or not to output progress bar
 
 def generate_hypothesis_matrix( M, b, track=False ):
   h = 256
@@ -336,36 +349,11 @@ def generate_hypothesis_matrix( M, b, track=False ):
       a = SBOX[m[b] ^ j]
       Hn.append(HW[a])
     H.append(Hn)
-
     if track:
       count += 1
       print_progress_bar(count, len(M), prefix='Progress', suffix='Complete', length=50)
-    
   return h, H
     
-
-def get_row_mean(R, i, s):
-  mean = 0
-  for j in range(0, s):
-    mean += R[i][j]
-  return mean / s
-
-def get_col_mean(C, j, t):
-  mean = 0
-  for i in range(0, t):
-    mean += C[i][j]
-  return mean / t
-
-
-def numpy_pearson_cor(x, y):
-  xv = x -  numpy.mean(x,axis=0)
-  yv = y -  numpy.mean(y,axis=0)
-  xvss =  numpy.sum(xv * xv,axis=0)
-  yvss =  numpy.sum(yv * yv,axis=0)
-  result =  numpy.matmul( numpy.transpose(xv), yv) /  numpy.sqrt( numpy.outer(xvss, yvss))
-  # bound the values to -1 to 1 in the event of precision issues
-  return  numpy.maximum( numpy.minimum(result, 1.0), -1.0)
-
 
 def get_col_pearson_factors(X):
   u = numpy.mean(X)
@@ -408,13 +396,23 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
     for j in range(0, s):
       corr = get_correlation_at_point(H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, i, j, t)
       C_row.append(abs(corr))
-      if corr > max[1]:
-        max = (i, corr)
+      if abs(corr) > max[1]:
+        max = (i, abs(corr))
       if track:
         print_progress_bar(i*s + j, h*s, prefix='Progress', suffix='Complete', length=50)
     C.append(C_row)
   
-  return max
+  return C, max
+
+
+def output_correlation_graph(C):
+  for i in range(0, len(C)):
+    plt.plot(numpy.arange(0, s), C[j])
+    plt.xlabel('Samples')
+    plt.ylabel('Correlation')
+    plt.savefig(str(i) + '-corr')
+    print_progress_bar(i, len(C), prefix='Progress', suffix='Complete', length=50)
+
 
 ## Attack implementation, as invoked from main after checking command line
 ## arguments.
@@ -423,26 +421,28 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
 ## \param[in] argv           command line arguments
 
 #s = 82560
+#provisional key: [211, 133, 51, 70, 2, 139, 110, 36, 134, 98, 233, 149, 171, 104, 126, 37]
 
 def attack( argc, argv ) :
   t, s, M, C, T = traces_ld( '../stage2.dat' )
 
-  T, s = truncate_trace_samples(T, t, 0, 20000)
-  T, s = compress_trace_samples(T, t, s, 5)
+  T, s = truncate_trace_samples(T, t, 0, 10000)
+  T, s = compress_trace_samples(T, t, s, 20)
 
   print('\nGenerating PCC data for trace matrix')
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
 
   K = []
-  for i in range(0, 1):
+  for i in range(0, 16):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
     h, H = generate_hypothesis_matrix( M, i, True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
 
     print('\nPerforming correlation analysis for byte ' + str(i + 1) + '/16')
-    kb = disinguish_hypothesis( T, H, t, s, h, i, H_cpf, H_cpf_sqrt, T_cpf, T_cpf_sqrt, True )
+    C, kb = disinguish_hypothesis( T, H, t, s, h, i, H_cpf, H_cpf_sqrt, T_cpf, T_cpf_sqrt, True )
     K.append(kb[0])
-  print(K)
+
+  print('\n\n' + str(K))
 
 
 if ( __name__ == '__main__' ) :
