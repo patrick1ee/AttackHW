@@ -296,8 +296,8 @@ def traces_st( f, t, s, M, C, T ) :
 ## \param[in] t the number of traces
 ## \param[in] start the lower bound of the range to retain
 ## \param[in] start the upper bound of the range to retain
-## \return    T a t-by-s  matrix of the truncated samples, i.e., the new traces
 ## \return    s the new number of samples in each truncated trace
+## \return    T_t a t-by-s  matrix of the truncated samples, i.e., the new traces
 
 def truncate_trace_samples( T, t, start, end ):
   T_t = []
@@ -307,17 +307,17 @@ def truncate_trace_samples( T, t, start, end ):
       T_s.append(T[i][j])
     T_t.append(T_s)
   s = end - start
-  return T_t, s
+  return s, T_t
 
 
 ## Compress each trace in a given matrix by averaging out the samples over a given range
 ## 
 ## \param[in] T   a t-by-s  matrix of samples, i.e., the traces
 ## \param[in] t   the number of traces
-## \param[in] s   the number of sample sin each trace
+## \param[in] s   the number of samples in each trace
 ## \param[in] n   the range over which to create averages over
-## \return    T_t a t-by-s  matrix of the compressed samples, i.e., the new traces
 ## \return    sn  the new number of samples in each compressed trace
+## \return    T_t a t-by-s  matrix of the compressed samples, i.e., the new traces
 
 def compress_trace_samples( T, t, s, n ):
   T_t = []
@@ -330,17 +330,20 @@ def compress_trace_samples( T, t, s, n ):
       T_s.append(mean / n)
     T_t.append(T_s)
     sn = int(s / n)
-  return T_t, sn
+  return sn, T_t
 
 
 ## Generates a hyptohesis for each possible byte of the encyption key, given a list of messages
 ## 
 ## \param[in] M     array of messages to use
 ## \param[in] b     integer representing the hypothetical key byte
+## \param[in] k     integer representing the size in bytes of the key
 ## \param[in] track boolean determining whether or not to output progress bar
+## \return    H     t-by-h matrix of hypothesied traces
+## \return    h     the number of hypothetical key bytes
 
-def generate_hypothesis_matrix( M, b, track=False ):
-  h = 256
+def generate_hypothesis_matrix( M, b, k, track=False ):
+  h = k
   H = []
   count = 0
   for m in M:
@@ -355,6 +358,12 @@ def generate_hypothesis_matrix( M, b, track=False ):
   return h, H
     
 
+## Pre-computes components required for computing the pearson correlation coeffecient of vector X with an unkown vector
+## 
+## \param[in] X           vector to pre-compute pearson components
+## \return    X_norm      vector of the same shape as X containing the normalised values of X (mean subtracted)
+## \return    X_norm_sqrt float representing the root of the summation of squared normalised values of X
+
 def get_col_pearson_factors(X):
   u = numpy.mean(X)
   X_norm = []
@@ -364,6 +373,14 @@ def get_col_pearson_factors(X):
     X_norm.append(xn)
     X_norm_sqrt += xn ** 2
   return X_norm, numpy.sqrt(X_norm_sqrt)
+
+
+## Pre-computes components required for computing the pearson correlation coeffecients of the columns of matrix X with the columns of unknown matrix
+## 
+## \param[in] X           vector to pre-compute pearson components
+## \param[in] track       boolean determining whether or not to output progress bar
+## \return    X_cpf       matrix X with each column normalised
+## \return    X_cpf_sqrt  vector containing the root of the summation of squared normalised values for each column of X
 
 def get_col_pearson_factors_matrix(X, track=False):
   X = numpy.transpose(X)
@@ -379,11 +396,24 @@ def get_col_pearson_factors_matrix(X, track=False):
       print_progress_bar(count, len(X), prefix='Progress', suffix='Complete', length=50)
   return X_cpf, X_cpf_sqrt
 
+
+## Gets correlation at point i,j between hypothetical and real trace matrix
+## 
+## \param[in] H_cpf       the matrix of normalised vectors from the the hypothesis matrix
+## \param[in] H_cpf_sqrt  the vector of total squared normalised summations from the hypothesis matrix
+## \param[in] H_cpf       the matrix of normalised vectors from the the real trace matrix
+## \param[in] H_cpf_sqrt  the vector of total squared normalised summations from the real trace matrix
+## \param[in] i           row of correlation matrix
+## \param[in] j           row of correlation matrix
+## \param[in] t           the number of traces
+## \return    corr        pearson correlation coeffecient at point i,j
+
 def get_correlation_at_point(H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, i, j, t):
   HR = 0
   for x in range(0, t):
     HR += H_cpf[i][x] * R_cpf[j][x]
-  return HR / ( H_cpf_sqrt[i] * R_cpf_sqrt[j])
+  corr = HR / ( H_cpf_sqrt[i] * R_cpf_sqrt[j])
+  return corr
 
 
 def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sqrt, track=False ):                                                                                                                                                                       
@@ -424,18 +454,19 @@ def output_correlation_graph(C):
 #provisional key: [211, 133, 51, 70, 2, 139, 110, 36, 134, 98, 233, 149, 171, 104, 126, 37]
 
 def attack( argc, argv ) :
+  SIZE_OF_KEY = 16
   t, s, M, C, T = traces_ld( '../stage2.dat' )
 
-  T, s = truncate_trace_samples(T, t, 0, 10000)
-  T, s = compress_trace_samples(T, t, s, 20)
+  s, T = truncate_trace_samples(T, t, 0, 10000)
+  s, T = compress_trace_samples(T, t, s, 20)
 
   print('\nGenerating PCC data for trace matrix')
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
 
   K = []
-  for i in range(0, 16):
+  for i in range(0, SIZE_OF_KEY):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
-    h, H = generate_hypothesis_matrix( M, i, True )
+    h, H = generate_hypothesis_matrix( M, i, SIZE_OF_KEY True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
 
     print('\nPerforming correlation analysis for byte ' + str(i + 1) + '/16')
