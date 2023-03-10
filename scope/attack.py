@@ -4,9 +4,19 @@
 # which can be found via http://creativecommons.org (and should be included as 
 # LICENSE.txt within the associated archive or repository).
 
-import  argparse, binascii, numpy, select, serial, socket, string, struct, sys, time
+import  argparse, binascii, numpy select, serial, socket, string, struct, sys, time
+import picoscope.ps2000a as ps2000a
+import random.randint as randint
 
 import matplotlib.pyplot as plt
+
+SIZE_OF_BLK = 16
+SIZE_OF_KEY = 16
+
+PS2000A_RATIO_MODE_NONE = 0 # Section 3.18.1
+PS2000A_RATIO_MODE_AGGREGATE = 1 # Section 3.18.1
+PS2000A_RATIO_MODE_DECIMATE = 2 # Section 3.18.1
+PS2000A_RATIO_MODE_AVERAGE = 4 # Section 3.18.1
 
 ## Pre-computed values for the AES S-box function
 
@@ -87,6 +97,7 @@ def print_progress_bar (iteration, total, prefix = '', suffix = '', decimals = 1
     # Print New Line on Complete
     if iteration == total: 
         print()
+
 
 ## Convert a byte string (e.g., bytearray) into a sequence (or list) of bytes.
 ## 
@@ -227,6 +238,7 @@ def board_rdbytes( fd, n ) :
 
   return r
 
+
 ## Write an array of bytes to SCALE development board
 ##
 ## \param[in] fd     a communication end-point
@@ -242,11 +254,124 @@ def board_wrbytes( fd, bytes, n ) :
   time.sleep( args.throttle_wr )
 
 
-def enc(m) :
+## Generate random plaintext of SIZE_OF_BLK bytes
+##
+## \return m randomly generated plaintext
+
+def generate_plaintext():
+  m = []
+  for i in range( SIZE_OF_BLK ):
+    m.append( randint( 0, 256 ) )
+  return m
+
+## Acquire trace using picoscope
+##
+## \param[in] num_samples integer representing number of samples to acquire
+## \return    trace_size  integer representing size of final trace (filtering out values where the trigger is below the threshold)
+## \return    A           array of samples from channel A (trigger signal)
+## \return    B           array of samples from channel B (acquisition signal)
+
+def acquire_trace( num_samples ):
+  # Phase 1 follows Section 2.7.1.1 of the 2206B programming guide , producing
+  # a 1-shot block mode acquisition process : it configures the 2206B to
+  #
+  # - wait for a trigger signal (a positive edge exceeding 2 V) on channel A,
+  # - sample from both channel A and B, using appropriate voltage ranges and
+  # for an appropriate amount of time (i.e., ~2 ms),
+  # - store the resulting data in buffers with no post - processing (e.g., with
+  # no downsampling ).
+
+  try :
+  # Section 3.32 , Page 60; Step 1: open the oscilloscope
+  scope = ps2000a . PS2000a ()
+
+  # Section 3.28 , Page 56
+  scope_adc_min = scope . getMinValue ()
+  # Section 3.30 , Page 58
+  scope_adc_max = scope . getMaxValue ()
+
+  # Section 3.39 , Page 69; Step 2: configure channels
+  scope. setChannel ( channel = 'A', enabled = True , coupling = 'DC', VRange = 5.0E -0 )
+  scope_range_chan_a = 5.0e -0
+  scope. setChannel ( channel = 'B', enabled = True , coupling = 'DC', VRange = 500.0E -3 )
+  scope_range_chan_b = 500.0e -3
+
+  # Section 3.13 , Page 36; Step 3: configure timebase
+  #( _, samples , samples_max ) = scope . setSamplingInterval ( 4.0E-9, 2.0E -3 )
+
+  # Section 3.56 , Page 93; Step 4: configure trigger
+  scope. setSimpleTrigger ( 'A', threshold_V = 2.0E-0, direction = 'Rising ', timeout_ms = 0 )
+
+  # Section 3.37 , Page 65; Step 5: start acquisition
+  scope. runBlock ()
+
+  # Section 3.26 , Page 54; Step 6: wait for acquisition to complete
+  while ( not scope . isReady () ) : time. sleep ( 1 )
+
+  # Section 3.40 , Page 71; Step 7: configure buffers
+  # Section 3.18 , Page 43; Step 8; transfer buffers
+  ( A, _, _ ) = scope . getDataRaw ( channel = 'A', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+  ( B, _, _ ) = scope . getDataRaw ( channel = 'B', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+
+  # Section 3.2 , Page 25; Step 10: stop acquisition
+  scope.stop ()
+
+  # Section 3.2 , Page 25; Step 13: close the oscilloscope
+  scope.close ()
+
+  except Exception as e :
+    raise e
+
+  # Phase 2 simply stores the acquired data (both channels A *and* B) into a
+  # CSV - formated file named on the command line.
+
+  trace_A = []
+  trace_B = []
+  trace_size = 0
+  
+  for i in range( samples ) :
+    A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_a
+    B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_b
+    if B_i < 2.0:
+      trace_size = i
+      break
+    else:
+      trace_A.append( A_i )
+      trace_B.append( B_i )
+
+  return trace_size, trace_A, trace_B
+
+
+## Acquire series of traces from encrypting random plaintexts
+## 
+## \param[in] num_samples the number of intial samples to record for each trace
+## \param[in] num_traces  the number of traces to acquire
+## \return    t           the number of acquired traces
+## \return    s           the number of samples in each trace
+## \return    M           a t-by-16 matrix of AES-128  plaintexts
+## \return    C           a t-by-16 matrix of AES-128 ciphertexts
+## \return    T           a t-by-s  matrix of samples, i.e., the traces
+
+def acquire_encryption_traces( num_samples, num_traces ) :
+  M = [] ; C = [] ; T = [] ; t = 0 ; s = num_samples ; prev_trace_size = num_samples
   fd = board_open()
-  board_wrbytes(fd, m, 16)
-  r = board_rdbytes(fd, 16)
+  for i in range( num_traces ):
+    m = generate_plaintext()
+    board_wrbytes( fd, [ 0x31 ], 1 )
+    board_wrbytes( fd, m, SIZE_OF_BLK )
+    trace_size, A, B = acquire_trace( num_samples )
+    r = board_rdbytes( fd, SIZE_OF_BLK )
+
+    ## Ensure all traces are of the same size
+    if trace_size < prev_trace_size and t > 0:
+      T[ t - 1 ] = T[ t - 1][ : prev_trace_size - trace_size ]
+      prev_trace_size = trace_size
+
+    M.append( m ) ; C.append( c ) ; T.append( B ) ; t += 1 ; s = prev_trace_size
+
   board_close( fd )
+  return t, s, M, C, T
+
 
 ## Load  a trace data set from an on-disk file.
 ## 
@@ -483,7 +608,6 @@ def output_correlation_graph(C):
 #provisional key: [211, 133, 51, 70, 2, 139, 110, 36, 134, 98, 233, 149, 171, 104, 126, 37]
 
 def attack( argc, argv ) :
-  SIZE_OF_KEY = 16
   t, s, M, C, T = traces_ld( '../stage2.dat' )
 
   s, T = truncate_trace_samples(T, t, 0, 10000)
@@ -514,8 +638,8 @@ if ( __name__ == '__main__' ) :
   parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = None               )
   parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = None               )
   parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 1.0                )
-  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.5                )
-  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.5                )
+  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.1                )
+  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.1                )
   parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
