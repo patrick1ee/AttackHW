@@ -161,14 +161,13 @@ def board_close( fd ) :
 ## \param[in] fd a communication end-point
 ## \return    r  a string (e.g., string, or bytearray)
 
-def board_rdln( fd    ) :
+def board_rdln( fd ) :
   r = ''
 
   while( True ):
-    t = fd.read( 1 ).decode( 'ascii' )
-
+    t = fd.read( 1 )
     if ( args.debug ) :
-      print( 'rdln> {0:s} [{1:02X}]'.format( t if ( t.isprintable() ) else ' ', ord( t ) ) )
+      print( 'rdln> {0:s} [{1:02X}]'.format( t if ( t.isprintable() ) else ' ', t ) )
 
     if( t == '\x0D' ) :
       break
@@ -187,6 +186,7 @@ def board_rdln( fd    ) :
 
   return r
 
+
 ## Write (or send)    a string to   SCALE development board, automatically 
 ## managing CR-only EOL semantics.
 ## Note the delay, which is intended to throttle (or slow down) communication
@@ -202,21 +202,50 @@ def board_wrln( fd, x ) :
   elif ( args.force_lower ) :
     x = x.lower()
 
-  fd.write( ( x + '\x0D' ).encode( 'ascii' ) ) ; fd.flush()
+  fd.write( ( x ).encode( 'ascii' ) ) ; fd.flush()
 
   if ( args.debug ) :
     print( 'wrln> {0:s}'.format( x ) )
 
   time.sleep( args.throttle_wr )
 
-## Client im ; x = args.data r = f_i( x )).
+
+## Read  (or recieve) an array from SCALE development board, automatically 
+##
+## \param[in] fd a communication end-point
+## \param[in] n  number of bytes to read
+## \return    r  an array of byte
+
+def board_rdbytes( fd, n ) :
+  r = []
+
+  for i in range(0, n):
+    t = fd.read( 1 )
+    r.append( t )
+
+  time.sleep( args.throttle_rd )
+
+  return r
+
+## Write an array of bytes to SCALE development board
+##
+## \param[in] fd     a communication end-point
+## \param[in] bytes  array of bytes to write
+## \param[in] n      number of bytes to write
+
+def board_wrbytes( fd, bytes, n ) :
+  r = []
+
+  for i in range(0, n):
+    fd.write( ( i.to_bytes(1, "big")) ) ; fd.flush()
+    
+  time.sleep( args.throttle_wr )
+
 
 def enc(m) :
   fd = board_open()
-  board_wrln( fd, "1")
-  board_wrln( fd, m )
-  r = board_rdln( fd )
-  print(r)
+  board_wrbytes(fd, m, 16)
+  r = board_rdbytes(fd, 16)
   board_close( fd )
 
 ## Load  a trace data set from an on-disk file.
@@ -466,7 +495,7 @@ def attack( argc, argv ) :
   K = []
   for i in range(0, SIZE_OF_KEY):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
-    h, H = generate_hypothesis_matrix( M, i, SIZE_OF_KEY True )
+    h, H = generate_hypothesis_matrix( M, i, SIZE_OF_KEY, True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
 
     print('\nPerforming correlation analysis for byte ' + str(i + 1) + '/16')
@@ -477,8 +506,8 @@ def attack( argc, argv ) :
 
 
 if ( __name__ == '__main__' ) :
-  '''parser = argparse.ArgumentParser()
-  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = True              )
+  parser = argparse.ArgumentParser()
+  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = False             )
   parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'uart'             )
   parser.add_argument( '--data',          dest = 'data',          type = str, action = 'store',                                 default = None               )
   parser.add_argument( '--uart',          dest = 'uart',          type = str, action = 'store',                                 default = '/dev/scale-board' )
@@ -490,5 +519,5 @@ if ( __name__ == '__main__' ) :
   parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
-  enc("1234567890123456")'''
-  attack( len( sys.argv ), sys.argv )
+  enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
+  #attack( len( sys.argv ), sys.argv )
