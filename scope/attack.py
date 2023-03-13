@@ -4,9 +4,9 @@
 # which can be found via http://creativecommons.org (and should be included as 
 # LICENSE.txt within the associated archive or repository).
 
-import  argparse, binascii, numpy select, serial, socket, string, struct, sys, time
+import  argparse, binascii, numpy, select, serial, socket, string, struct, sys, time
 import picoscope.ps2000a as ps2000a
-import random.randint as randint
+from random import randint
 
 import matplotlib.pyplot as plt
 
@@ -232,7 +232,7 @@ def board_rdbytes( fd, n ) :
 
   for i in range(0, n):
     t = fd.read( 1 )
-    r.append( t )
+    r.append( int.from_bytes( t, "big") )
 
   time.sleep( args.throttle_rd )
 
@@ -246,11 +246,12 @@ def board_rdbytes( fd, n ) :
 ## \param[in] n      number of bytes to write
 
 def board_wrbytes( fd, bytes, n ) :
-  r = []
 
   for i in range(0, n):
-    fd.write( ( i.to_bytes(1, "big")) ) ; fd.flush()
-    
+    fd.write( ( bytes[i].to_bytes(1, "big")) ) ; fd.flush()
+  
+  print('Written ' + str(bytes))
+
   time.sleep( args.throttle_wr )
 
 
@@ -261,7 +262,7 @@ def board_wrbytes( fd, bytes, n ) :
 def generate_plaintext():
   m = []
   for i in range( SIZE_OF_BLK ):
-    m.append( randint( 0, 256 ) )
+    m.append( randint( 0, 255 ) )
   return m
 
 ## Acquire trace using picoscope
@@ -271,7 +272,7 @@ def generate_plaintext():
 ## \return    A           array of samples from channel A (trigger signal)
 ## \return    B           array of samples from channel B (acquisition signal)
 
-def acquire_trace( num_samples ):
+def acquire_trace( fd, m, num_samples ):
   # Phase 1 follows Section 2.7.1.1 of the 2206B programming guide , producing
   # a 1-shot block mode acquisition process : it configures the 2206B to
   #
@@ -282,48 +283,53 @@ def acquire_trace( num_samples ):
   # no downsampling ).
 
   try :
-  # Section 3.32 , Page 60; Step 1: open the oscilloscope
-  scope = ps2000a . PS2000a ()
+    # Section 3.32 , Page 60; Step 1: open the oscilloscope
+    scope = ps2000a . PS2000a ()
 
-  # Section 3.28 , Page 56
-  scope_adc_min = scope . getMinValue ()
-  # Section 3.30 , Page 58
-  scope_adc_max = scope . getMaxValue ()
+    # Section 3.28 , Page 56
+    scope_adc_min = scope . getMinValue ()
+    # Section 3.30 , Page 58
+    scope_adc_max = scope . getMaxValue ()
 
-  # Section 3.39 , Page 69; Step 2: configure channels
-  scope. setChannel ( channel = 'A', enabled = True , coupling = 'DC', VRange = 5.0E -0 )
-  scope_range_chan_a = 5.0e -0
-  scope. setChannel ( channel = 'B', enabled = True , coupling = 'DC', VRange = 500.0E -3 )
-  scope_range_chan_b = 500.0e -3
+    # Section 3.39 , Page 69; Step 2: configure channels
+    scope. setChannel ( channel = 'A', enabled = True , coupling = 'DC', VRange = 5.0E-0 )
+    scope_range_chan_a = 5.0e-0
+    scope. setChannel ( channel = 'B', enabled = True , coupling = 'DC', VRange = 500.0E-3 )
+    scope_range_chan_b = 500.0e-3
 
-  # Section 3.13 , Page 36; Step 3: configure timebase
-  #( _, samples , samples_max ) = scope . setSamplingInterval ( 4.0E-9, 2.0E -3 )
+    # Section 3.13 , Page 36; Step 3: configure timebase
+    ( _, samples , samples_max ) = scope . setSamplingInterval ( 4.0E-9, 2.0E-3 )
 
-  # Section 3.56 , Page 93; Step 4: configure trigger
-  scope. setSimpleTrigger ( 'A', threshold_V = 2.0E-0, direction = 'Rising ', timeout_ms = 0 )
+    # Section 3.56 , Page 93; Step 4: configure trigger
+    scope. setSimpleTrigger ( 'A', threshold_V = 2.0E-0, direction = 'Rising', timeout_ms = 0 )
 
-  # Section 3.37 , Page 65; Step 5: start acquisition
-  scope. runBlock ()
+    # Section 3.37 , Page 65; Step 5: start acquisition
 
-  # Section 3.26 , Page 54; Step 6: wait for acquisition to complete
-  while ( not scope . isReady () ) : time. sleep ( 1 )
+    scope. runBlock ()
+    board_wrbytes( fd, [ 0x31 ], 1 )
+    board_wrbytes( fd, m, SIZE_OF_BLK )
+  
+    # Section 3.26 , Page 54; Step 6: wait for acquisition to complete
+    while ( not scope . isReady () ) : time. sleep ( 1.0 )
 
-  # Section 3.40 , Page 71; Step 7: configure buffers
-  # Section 3.18 , Page 43; Step 8; transfer buffers
-  ( A, _, _ ) = scope . getDataRaw ( channel = 'A', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
-  ( B, _, _ ) = scope . getDataRaw ( channel = 'B', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+    # Section 3.40 , Page 71; Step 7: configure buffers
+    # Section 3.18 , Page 43; Step 8; transfer buffers
+    ( A, _, _ ) = scope . getDataRaw ( channel = 'A', numSamples = samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+    ( B, _, _ ) = scope . getDataRaw ( channel = 'B', numSamples = samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
 
-  # Section 3.2 , Page 25; Step 10: stop acquisition
-  scope.stop ()
+    # Section 3.2 , Page 25; Step 10: stop acquisition
+    scope.stop ()
 
-  # Section 3.2 , Page 25; Step 13: close the oscilloscope
-  scope.close ()
+    # Section 3.2 , Page 25; Step 13: close the oscilloscope
+    scope.close ()
 
   except Exception as e :
     raise e
 
   # Phase 2 simply stores the acquired data (both channels A *and* B) into a
   # CSV - formated file named on the command line.
+
+  c = board_rdbytes(fd, SIZE_OF_BLK )
 
   trace_A = []
   trace_B = []
@@ -332,14 +338,12 @@ def acquire_trace( num_samples ):
   for i in range( samples ) :
     A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_a
     B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_b
-    if B_i < 2.0:
-      trace_size = i
-      break
-    else:
+    if A_i >= 2.0:
       trace_A.append( A_i )
       trace_B.append( B_i )
+      trace_size += 1
 
-  return trace_size, trace_A, trace_B
+  return c, trace_size, trace_A, trace_B
 
 
 ## Acquire series of traces from encrypting random plaintexts
@@ -352,33 +356,32 @@ def acquire_trace( num_samples ):
 ## \return    C           a t-by-16 matrix of AES-128 ciphertexts
 ## \return    T           a t-by-s  matrix of samples, i.e., the traces
 
-def acquire_encryption_traces( num_samples, num_traces ) :
+def acquire_encryption_traces( num_traces, num_samples=100000 ) :
   M = [] ; C = [] ; T = [] ; t = 0 ; s = num_samples ; prev_trace_size = num_samples
-  fd = board_open()
+
   for i in range( num_traces ):
+    fd = board_open()
     m = generate_plaintext()
-    board_wrbytes( fd, [ 0x31 ], 1 )
-    board_wrbytes( fd, m, SIZE_OF_BLK )
-    trace_size, A, B = acquire_trace( num_samples )
-    r = board_rdbytes( fd, SIZE_OF_BLK )
+    c, trace_size, A, B = acquire_trace( fd, m, num_samples )
 
     ## Ensure all traces are of the same size
     if trace_size < prev_trace_size and t > 0:
       T[ t - 1 ] = T[ t - 1][ : prev_trace_size - trace_size ]
-      prev_trace_size = trace_size
+
+    prev_trace_size = trace_size
 
     M.append( m ) ; C.append( c ) ; T.append( B ) ; t += 1 ; s = prev_trace_size
+    print_progress_bar(i, num_traces, prefix='Progress', suffix='Complete', length=50)
+    board_close( fd )
 
-  board_close( fd )
-  return t, s, M, C, T
-
+  return num_traces, prev_trace_size, M, C, T
 
 ## Load  a trace data set from an on-disk file.
 ## 
 ## \param[in] f the filename to load  trace data set from
 ## \return    t the number of traces
 ## \return    s the number of samples in each trace
-## \return    M a t-by-16 matrix of AES-128  plaintexts
+## \return    M a t-by-16 matrix of AES-128  pla    board_wrbytes( fd, m, SIZE_OF_BLK )intexts
 ## \return    C a t-by-16 matrix of AES-128 ciphertexts
 ## \return    T a t-by-s  matrix of samples, i.e., the traces
 
@@ -591,11 +594,18 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
 
 def output_correlation_graph(C):
   for i in range(0, len(C)):
-    plt.plot(numpy.arange(0, s), C[j])
+    plt.plot(numpy.arange(0, s), C[i])
     plt.xlabel('Samples')
     plt.ylabel('Correlation')
     plt.savefig(str(i) + '-corr')
     print_progress_bar(i, len(C), prefix='Progress', suffix='Complete', length=50)
+
+
+def output_trace_graph(t):
+  plt.plot(numpy.arange(0, len(t)), t)
+  plt.xlabel('Samples')
+  plt.ylabel('Voltage')
+  plt.savefig('trace')
 
 
 ## Attack implementation, as invoked from main after checking command line
@@ -637,11 +647,14 @@ if ( __name__ == '__main__' ) :
   parser.add_argument( '--uart',          dest = 'uart',          type = str, action = 'store',                                 default = '/dev/scale-board' )
   parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = None               )
   parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = None               )
-  parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 1.0                )
-  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.1                )
+  parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 0.0                )
+  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.0                )
   parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.1                )
   parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
-  enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
+
+  t, s, M, C, T = acquire_encryption_traces(1000)
+  traces_st( 's1', t, s, M, C, T )
+  #enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
   #attack( len( sys.argv ), sys.argv )
