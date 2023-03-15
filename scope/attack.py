@@ -18,6 +18,9 @@ PS2000A_RATIO_MODE_AGGREGATE = 1 # Section 3.18.1
 PS2000A_RATIO_MODE_DECIMATE = 2 # Section 3.18.1
 PS2000A_RATIO_MODE_AVERAGE = 4 # Section 3.18.1
 
+SCOPE_RANGE_CHAN_A = 5.0E-0
+SCOPE_RANGE_CHAN_B = 500.0E-3
+
 ## Pre-computed values for the AES S-box function
 
 SBOX = [
@@ -255,24 +258,14 @@ def board_wrbytes( fd, bytes, n ) :
   time.sleep( args.throttle_wr )
 
 
-## Generate random plaintext of SIZE_OF_BLK bytes
+## Initialise and open oscilloscope
 ##
-## \return m randomly generated plaintext
+## \return scope         PS2000a instance which is ready to use
+## \return num_samples   number of samples in given sampling interval
+## \return scope_adc_max maximum ADC count in GetValues calls
+## \return scope_adc_min minimum ADC count in GetValues calls
 
-def generate_plaintext():
-  m = []
-  for i in range( SIZE_OF_BLK ):
-    m.append( randint( 0, 255 ) )
-  return m
-
-## Acquire trace using picoscope
-##
-## \param[in] num_samples integer representing number of samples to acquire
-## \return    trace_size  integer representing size of final trace (filtering out values where the trigger is below the threshold)
-## \return    A           array of samples from channel A (trigger signal)
-## \return    B           array of samples from channel B (acquisition signal)
-
-def acquire_trace( fd, m, num_samples ):
+def setup_scope():
   # Phase 1 follows Section 2.7.1.1 of the 2206B programming guide , producing
   # a 1-shot block mode acquisition process : it configures the 2206B to
   #
@@ -292,36 +285,64 @@ def acquire_trace( fd, m, num_samples ):
     scope_adc_max = scope . getMaxValue ()
 
     # Section 3.39 , Page 69; Step 2: configure channels
-    scope. setChannel ( channel = 'A', enabled = True , coupling = 'DC', VRange = 5.0E-0 )
-    scope_range_chan_a = 5.0e-0
-    scope. setChannel ( channel = 'B', enabled = True , coupling = 'DC', VRange = 500.0E-3 )
-    scope_range_chan_b = 500.0e-3
+    scope. setChannel ( channel = 'A', enabled = True , coupling = 'DC', VRange = SCOPE_RANGE_CHAN_A )
+    scope. setChannel ( channel = 'B', enabled = True , coupling = 'DC', VRange = SCOPE_RANGE_CHAN_B )
 
     # Section 3.13 , Page 36; Step 3: configure timebase
-    ( _, samples , samples_max ) = scope . setSamplingInterval ( 4.0E-9, 2.0E-3 )
+    ( _, num_samples , samples_max ) = scope . setSamplingInterval ( 4.0E-9, 2.0E-3 )
 
     # Section 3.56 , Page 93; Step 4: configure trigger
     scope. setSimpleTrigger ( 'A', threshold_V = 2.0E-0, direction = 'Rising', timeout_ms = 0 )
 
-    # Section 3.37 , Page 65; Step 5: start acquisition
+    return scope, num_samples, scope_adc_max, scope_adc_min
 
+  except Exception as e :
+    raise e
+
+
+## Generate random plaintext of SIZE_OF_BLK bytes
+##
+## \return m randomly generated plaintext
+
+def generate_plaintext():
+  m = []
+  for i in range( SIZE_OF_BLK ):
+    m.append( randint( 0, 255 ) )
+  return m
+
+## Acquire trace using picoscope
+##
+## \param[in] scope         picoscope instance of PS2000A, representing oscilloscope
+## \param[in] fd            a communication end-point for the SCALE board
+## \param[in] m             randomly generated plaintext to use for encryption trace
+## \param[in] num_samples   integer representing number of samples to acquire
+## \param[in] scope_adc_max maximum ADC count in GetValues calls
+## \param[in] scope_adc_min minimum ADC count in GetValues calls
+## \return    trace_size    integer representing size of final trace (filtering out values where the trigger is below the threshold)
+## \return    A             array of samples from channel A (trigger signal)
+## \return    B             array of samples from channel B (acquisition signal)
+
+def acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min ):
+
+  try :
+    # Section 3.37 , Page 65; Step 5: start acquisition
     scope. runBlock ()
+
+    # Pass encryption command, message and randomness inputs to target
     board_wrbytes( fd, [ 0x31 ], 1 )
     board_wrbytes( fd, m, SIZE_OF_BLK )
+    board_wrbytes( fd, [ 0x39 ], 1 )
   
     # Section 3.26 , Page 54; Step 6: wait for acquisition to complete
     while ( not scope . isReady () ) : time. sleep ( 1.0 )
 
     # Section 3.40 , Page 71; Step 7: configure buffers
     # Section 3.18 , Page 43; Step 8; transfer buffers
-    ( A, _, _ ) = scope . getDataRaw ( channel = 'A', numSamples = samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
-    ( B, _, _ ) = scope . getDataRaw ( channel = 'B', numSamples = samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+    ( A, _, _ ) = scope . getDataRaw ( channel = 'A', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
+    ( B, _, _ ) = scope . getDataRaw ( channel = 'B', numSamples = num_samples , downSampleMode = PS2000A_RATIO_MODE_NONE )
 
     # Section 3.2 , Page 25; Step 10: stop acquisition
     scope.stop ()
-
-    # Section 3.2 , Page 25; Step 13: close the oscilloscope
-    scope.close ()
 
   except Exception as e :
     raise e
@@ -336,8 +357,8 @@ def acquire_trace( fd, m, num_samples ):
   trace_size = 0
   
   for i in range( samples ) :
-    A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_a
-    B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * scope_range_chan_b
+    A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_A
+    B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_B
     if A_i >= 2.0:
       trace_A.append( A_i )
       trace_B.append( B_i )
@@ -348,7 +369,6 @@ def acquire_trace( fd, m, num_samples ):
 
 ## Acquire series of traces from encrypting random plaintexts
 ## 
-## \param[in] num_samples the number of intial samples to record for each trace
 ## \param[in] num_traces  the number of traces to acquire
 ## \return    t           the number of acquired traces
 ## \return    s           the number of samples in each trace
@@ -356,13 +376,16 @@ def acquire_trace( fd, m, num_samples ):
 ## \return    C           a t-by-16 matrix of AES-128 ciphertexts
 ## \return    T           a t-by-s  matrix of samples, i.e., the traces
 
-def acquire_encryption_traces( num_traces, num_samples=100000 ) :
-  M = [] ; C = [] ; T = [] ; t = 0 ; s = num_samples ; prev_trace_size = num_samples
+def acquire_encryption_traces( num_traces ) :
+  M = [] ; C = [] ; T = [] ; t = 0 ; prev_trace_size = 1E6
+
+  fd = board_open()
+  scope, num_samples, scope_adc_max, scope_adc_min = setup_scope()
 
   for i in range( num_traces ):
-    fd = board_open()
+
     m = generate_plaintext()
-    c, trace_size, A, B = acquire_trace( fd, m, num_samples )
+    c, trace_size, A, B = acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min )
 
     ## Ensure all traces are of the same size
     if trace_size < prev_trace_size and t > 0:
@@ -372,7 +395,9 @@ def acquire_encryption_traces( num_traces, num_samples=100000 ) :
 
     M.append( m ) ; C.append( c ) ; T.append( B ) ; t += 1 ; s = prev_trace_size
     print_progress_bar(i, num_traces, prefix='Progress', suffix='Complete', length=50)
-    board_close( fd )
+  
+  board_close( fd )
+  scope.close()
 
   return num_traces, prev_trace_size, M, C, T
 
