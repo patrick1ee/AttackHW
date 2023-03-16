@@ -645,7 +645,7 @@ def output_trace_graph(t):
 def attack( argc, argv ) :
   t, s, M, C, T = traces_ld( '../stage2.dat' )
 
-  s, T = truncate_trace_samples(T, t, 0, 10000)
+  s, T = truncate_trace_samples(T, t, 0, 20000)
   s, T = compress_trace_samples(T, t, s, 20)
 
   print('\nGenerating PCC data for trace matrix')
@@ -679,7 +679,7 @@ if ( __name__ == '__main__' ) :
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
 
-  t, s, M, C, T = acquire_encryption_traces(1000)
-  traces_st( 's1', t, s, M, C, T )
+  #t, s, M, C, T = acquire_encryption_traces(1000)
+  #traces_st( 's1', t, s, M, C, T )
   #enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
-  #attack( len( sys.argv ), sys.argv )
+  attack( len( sys.argv ), sys.argv )
