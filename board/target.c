@@ -217,10 +217,14 @@ int octetstr_rd( uint8_t* r, int n_r ) {
   */
 
 void octetstr_wr( const uint8_t* x, int n_x ) {
+  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '0');
+  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '1');
+  scale_uart_wr(SCALE_UART_MODE_BLOCKING, ':');
+
   for(int i = 0; i < n_x; i++){
     scale_uart_wr(SCALE_UART_MODE_BLOCKING, x[i]);
   }
-  //scale_uart_wr(SCALE_UART_MODE_BLOCKING, 0x0D);
+  //scale_uart_wr(SCALE_UART_MODE_BLOCKING, '\n');
   return ;
 }
 

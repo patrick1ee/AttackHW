@@ -172,7 +172,7 @@ void aes_enc_rnd_sub( aes_gf28_t* s ) {
   * \param[   out]  s (a pointer to) the current state matrix
   */
 void aes_enc_rnd_sub_prng( aes_gf28_t* s ) {
-  int r = prng();
+  int r = rand();
 
   for(int i = 0; i < 16; i++){
     int j = ( i ^ r ) % 16;
@@ -192,7 +192,7 @@ void aes_enc_rnd_sub_fys( aes_gf28_t* s ) {
   }
 
   for(int i = 15; i >= 1; i--){
-    int j = prng() % (i + 1);
+    int j = rand() % (i + 1);
     aes_gf28_t t = T[j];
     T[j] = T[i];
     T[i] = t;
@@ -270,7 +270,7 @@ void octetstr_wr( const uint8_t* x, int n_x ) {
   * \param[in    ]   r (a pointer to) some         randomness
   */
 
-void aes_init( const uint8_t* k, const uint8_t* r, aes_gf28_t* m_sbox, aes_gf_28_t* m_sub_bytes, aes_gf28_t* s ) {
+void aes_init( const uint8_t* k, const uint8_t* r, aes_gf28_t* m_sbox, aes_gf28_t* m_sub_bytes, aes_gf28_t* s ) {
   if(0 != getentropy(m_sub_bytes, 2)){
     return;
   }
@@ -365,7 +365,7 @@ int main( int argc, char* argv[] ) {
   }
 
   uint8_t cmd[ 1 ], c[ SIZEOF_BLK ], m[ SIZEOF_BLK ], k[ SIZEOF_KEY ] = { 0x13, 0x0D, 0xDC, 0xD0, 0x7A, 0x3C, 0x82, 0x76, 0x2E, 0x52, 0x9D, 0x03, 0xC1, 0xB6, 0xAE, 0xD6 }, r[ SIZEOF_RND ];
-  aes_gf_28_t m_sbox[256], m_sub_bytes[2], m_mix_cols[4];
+  aes_gf28_t m_sbox[256], m_sub_bytes[2], m_mix_cols[4];
 
   while( true ) {
     if( 1 != octetstr_rd( cmd, 1 ) ) {
@@ -390,7 +390,7 @@ int main( int argc, char* argv[] ) {
           break;
         }
 
-        aes_init(       k, r );
+        aes_init( k, r, m_sbox, m_sub_bytes, m_mix_cols );
         
         scale_gpio_wr( SCALE_GPIO_PIN_TRG,  true );
         aes     ( c, m, k, r );
@@ -407,6 +407,8 @@ int main( int argc, char* argv[] ) {
         uint8_t c[ 16 ] = { 0x39, 0x25, 0x84, 0x1D, 0x02, 0xDC, 0x09, 0xFB,
                             0xDC, 0x11, 0x85, 0x97, 0x19, 0x6A, 0x0B, 0x32 };
         uint8_t t[ 16 ];
+
+        srand(time(NULL));
 
         aes_init( k, r, m_sbox, m_sub_bytes, m_mix_cols );
 

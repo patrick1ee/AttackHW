@@ -179,14 +179,15 @@ def board_rdln( fd ) :
   r = ''
 
   while( True ):
-    t = fd.read( 1 )
+    t = fd.read( 1 ).decode( 'ascii' )
     if ( args.debug ) :
-      print( 'rdln> {0:s} [{1:02X}]'.format( t if ( t.isprintable() ) else ' ', t ) )
+      print( 'rdln> {0:s} [{1:02X}]'.format( t if ( t.isprintable() ) else ' ', ord(t) ) )
 
     if( t == '\x0D' ) :
       break
     else:
-      r += t
+      #r += t
+      r = ''
 
   if   ( args.force_upper ) :
     r = r.upper()
@@ -223,6 +224,16 @@ def board_wrln( fd, x ) :
 
   time.sleep( args.throttle_wr )
 
+
+def enc( bytes ):
+  fd = board_open()
+  board_wrln(fd, "0")
+  r = board_rdln( fd )
+
+  t_3 = r
+  t_4 =                  octetstr2bytes( r )
+  print( 't_3 =                      r     = {0:s}'.format( repr( t_3 ) ) )
+  print( 't_4 =      octetstr2bytes( r )   = {0:s}'.format( repr( t_4 ) ) )
 
 ## Read  (or recieve) an array from SCALE development board, automatically 
 ##
@@ -356,7 +367,7 @@ def acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min ):
   trace_B = []
   trace_size = 0
   
-  for i in range( samples ) :
+  for i in range( num_samples ) :
     A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_A
     B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_B
     if A_i >= 2.0:
@@ -666,20 +677,20 @@ def attack( argc, argv ) :
 
 if ( __name__ == '__main__' ) :
   parser = argparse.ArgumentParser()
-  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = False             )
-  parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'uart'             )
+  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = True             )
+  parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'socket'             )
   parser.add_argument( '--data',          dest = 'data',          type = str, action = 'store',                                 default = None               )
   parser.add_argument( '--uart',          dest = 'uart',          type = str, action = 'store',                                 default = '/dev/scale-board' )
-  parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = None               )
-  parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = None               )
+  parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = '127.0.0.1'              )
+  parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = '1234'               )
   parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 0.0                )
   parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.0                )
-  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.1                )
+  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.0                )
   parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
 
   #t, s, M, C, T = acquire_encryption_traces(1000)
   #traces_st( 's1', t, s, M, C, T )
-  #enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
-  attack( len( sys.argv ), sys.argv )
+  enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
+  #attack( len( sys.argv ), sys.argv )

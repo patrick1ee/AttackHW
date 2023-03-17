@@ -9,6 +9,7 @@
 #define __TARGET_H
 
 #include <stdlib.h>
+#include <time.h>
 
 #include <scale/scale.h>
 
