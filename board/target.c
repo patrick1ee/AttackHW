@@ -187,6 +187,71 @@ void aes_enc_rnd_mix( aes_gf28_t* s ) {
   }
 }
 
+
+/** Converts byte in integer form into a single little endian "octet string" 
+  * 
+  * \param[in    ] octet (a pointer to) the sequence of chars to write to
+  * \param[in    ]  byte                the byte integer to convert
+  */
+
+void byte_to_octet ( char* octet, const uint8_t byte ) {
+  int byte_a = byte / 16;
+  int byte_b = byte - (byte_a * 16);
+
+  if ( byte_a < 9 ) {
+    octet[ 0 ] = byte_a + 48;
+  }
+  else {
+    octet[ 0 ] = ( byte_a - 10 ) + 65;
+  }
+
+  if ( byte_b < 9 ) {
+    octet[ 1 ] = byte_b + 48;
+  }
+  else {
+    octet[ 1 ] = ( byte_b - 10 ) + 65;
+  }
+}
+
+/** Converts a single little endian "octet string" into its integer representation
+  * 
+  * \param[in    ] octet (a pointer to) the sequence of chars to be read from
+  * \param[in    ]  byte                the byte integer to write to
+  * \return                             integer flag indicating whether conversion was successfull
+  */
+
+int octet_to_byte ( uint8_t* byte, const char* octet ) {
+
+  int byte_a = octet[ 0 ];
+  int byte_b = octet[ 1 ];
+
+  if ( byte_a < 48 || ( byte_a > 57 && byte_a < 65) || byte_a > 50) {
+    return -1;
+  }
+
+  if ( byte_b < 48 || ( byte_b > 57 && byte_b < 65) || byte_b > 50) {
+    return -1;
+  }
+
+  if ( byte_a >= 65 ) {
+    byte_a = ( byte_a - 65 ) + 10;
+  }
+  else {
+    byte_a -= 48;
+  }
+
+  if ( byte_b >= 65 ) {
+    byte_b = ( byte_b - 65 ) + 10;
+  }
+  else {
+    byte_b -= 48;
+  }
+
+  *byte = ( byte_a * 16 ) + byte_b;
+  return 0;
+}
+
+
 /** Read    a sequence of bytes from the UART, using a simple length-prefixed, 
   * little-endian hexadecimal "octet string" format.
   * 
@@ -196,16 +261,31 @@ void aes_enc_rnd_mix( aes_gf28_t* s ) {
   */
 
 int octetstr_rd( uint8_t* r, int n_r ) {
+  
   int n_x = 0;
-  while(n_x < n_r){
-    uint8_t c = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
-    if(c == '\r' || c == '\n'){
+  uint8_t prefix, byte;
+  char octet[ 2 ];
+
+  octet[ 0 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+  octet[ 1 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+
+  char seperator = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+
+  if( seperator != ':' || octet_to_byte ( prefix, octet ) != 0 ) {
+    return -1;
+  }
+
+  while ( n_x < n_r && n_r <= prefix * 2)  {
+    octet[ 0 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+    octet[ 1 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+
+    if ( octet_to_byte ( byte, octet ) != 0 ) {
       break;
     }
-    r[n_x] = c;
+
+    r[n_x] = byte;
     n_x += 1;
   }
-  //scale_uart_wr(SCALE_UART_MODE_BLOCKING, '\n');
   return n_x;
 }
 
@@ -217,14 +297,24 @@ int octetstr_rd( uint8_t* r, int n_r ) {
   */
 
 void octetstr_wr( const uint8_t* x, int n_x ) {
-  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '0');
-  scale_uart_wr(SCALE_UART_MODE_BLOCKING, '1');
-  scale_uart_wr(SCALE_UART_MODE_BLOCKING, ':');
+  
+  if( n_x > 255){
+    return;
+  }
+
+  char octet[ 2 ];
+
+  byte_to_octet ( octet, n_x );
+  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 0 ] );
+  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 1 ] );
+  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, ':' );
 
   for(int i = 0; i < n_x; i++){
-    scale_uart_wr(SCALE_UART_MODE_BLOCKING, x[i]);
+    byte_to_octet ( octet, x[ i ] );
+    scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 0 ] );
+    scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 1 ] );
   }
-  //scale_uart_wr(SCALE_UART_MODE_BLOCKING, '\n');
+  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, '\n' );
   return ;
 }
 

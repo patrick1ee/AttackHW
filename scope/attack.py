@@ -227,7 +227,7 @@ def board_wrln( fd, x ) :
 
 def enc( bytes ):
   fd = board_open()
-  board_wrln(fd, "0")
+  board_wrln(fd, "1")
   r = board_rdln( fd )
 
   t_3 = r
