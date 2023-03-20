@@ -198,14 +198,14 @@ void byte_to_octet ( char* octet, const uint8_t byte ) {
   int byte_a = byte / 16;
   int byte_b = byte - (byte_a * 16);
 
-  if ( byte_a < 9 ) {
+  if ( byte_a < 10 ) {
     octet[ 0 ] = byte_a + 48;
   }
   else {
     octet[ 0 ] = ( byte_a - 10 ) + 65;
   }
 
-  if ( byte_b < 9 ) {
+  if ( byte_b < 10 ) {
     octet[ 1 ] = byte_b + 48;
   }
   else {
@@ -225,11 +225,11 @@ int octet_to_byte ( uint8_t* byte, const char* octet ) {
   int byte_a = octet[ 0 ];
   int byte_b = octet[ 1 ];
 
-  if ( byte_a < 48 || ( byte_a > 57 && byte_a < 65) || byte_a > 50) {
+  if ( byte_a < 48 || ( byte_a > 57 && byte_a < 65) || byte_a > 70) {
     return -1;
   }
 
-  if ( byte_b < 48 || ( byte_b > 57 && byte_b < 65) || byte_b > 50) {
+  if ( byte_b < 48 || ( byte_b > 57 && byte_b < 65) || byte_b > 70) {
     return -1;
   }
 
@@ -271,15 +271,24 @@ int octetstr_rd( uint8_t* r, int n_r ) {
 
   char seperator = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
 
-  if( seperator != ':' || octet_to_byte ( prefix, octet ) != 0 ) {
+  if( seperator != ':' || octet_to_byte ( &prefix, octet ) != 0 ) {
     return -1;
   }
 
-  while ( n_x < n_r && n_r <= prefix * 2)  {
+  while ( n_x < n_r && n_r <= prefix )  {
     octet[ 0 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
+
+    if ( octet[ 0 ] == '\n' || octet[ 0 ] == '\r' ) {
+      break;
+    }
+
     octet[ 1 ] = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
 
-    if ( octet_to_byte ( byte, octet ) != 0 ) {
+    if ( octet[ 1 ] == '\n' || octet[ 1 ] == '\r' ) {
+      break;
+    }
+
+    if ( octet_to_byte ( &byte, octet ) != 0 ) {
       break;
     }
 
@@ -314,7 +323,7 @@ void octetstr_wr( const uint8_t* x, int n_x ) {
     scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 0 ] );
     scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 1 ] );
   }
-  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, '\n' );
+  scale_uart_wr ( SCALE_UART_MODE_BLOCKING, 0x0D );
   return ;
 }
 
@@ -409,7 +418,8 @@ int main( int argc, char* argv[] ) {
     return -1;
   }
 
-  uint8_t cmd[ 1 ], c[ SIZEOF_BLK ], m[ SIZEOF_BLK ], k[ SIZEOF_KEY ] = { 0x13, 0x0D, 0xDC, 0xD0, 0x7A, 0x3C, 0x82, 0x76, 0x2E, 0x52, 0x9D, 0x03, 0xC1, 0xB6, 0xAE, 0xD6 }, r[ SIZEOF_RND ];
+  //uint8_t cmd[ 1 ], c[ SIZEOF_BLK ], m[ SIZEOF_BLK ], k[ SIZEOF_KEY ] = { 0x13, 0x0D, 0xDC, 0xD0, 0x7A, 0x3C, 0x82, 0x76, 0x2E, 0x52, 0x9D, 0x03, 0xC1, 0xB6, 0xAE, 0xD6 }, r[ SIZEOF_RND ];
+  uint8_t cmd[ 1 ], c[ SIZEOF_BLK ], m[ SIZEOF_BLK ], k[ SIZEOF_KEY ] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C }, r[ SIZEOF_RND ];
 
   while( true ) {
     if( 1 != octetstr_rd( cmd, 1 ) ) {

@@ -118,29 +118,32 @@ def bytes2seq( x ) :
 def seq2bytes( x ) :
   return bytearray( [ int( t ) for t in x ] )
 
-## Convert a length-prefixed, hexadecimal octet string into a byte string.
+
+## Convert a length-prefixed, hexadecimal octet string into array of integer bytes
 ## 
 ## \param[in] x  an octet string
-## \return       a  byte  string
+## \return       array of integer bytes
 ## \throw        ValueError if the length prefix and data do not match
 
 def octetstr2bytes( x ) :
-  t = x.split( ':' ) ; n = int( t[ 0 ], 16 ) ; x = binascii.a2b_hex( t[ 1 ] )
+  b = [] ; t = x.split( ':' ) ; n = int( t[ 0 ], 16 )
 
-  if ( n != len( x ) ) :
+  if ( n != len( t[ 1 ] ) / 2 ) :
     raise ValueError
   else :
-    return x
+    for i in range(0, n):
+      b.append( int( t[ 1 ][ i*2 : (i+1)*2 ], 16 ) )
 
-## Convert a byte string into a length-prefixed, hexadecimal octet string.
-## 
-## \param[in] x  an octet string
-## \return       a  byte  string
+  return b
 
-def bytes2octetstr( x ) :
-  n = '{0:02X}'.format( len( x ) ) ; x = binascii.b2a_hex( x ).decode( 'ascii' ).upper()
+def byte_to_octet( x ) :
+  return format(x, '02x').upper()
 
-  return n + ':' + x
+def byte_seq_to_octet_string( X ) :
+  s = byte_to_octet( len( X ) ) + ":"
+  for x in X:
+    s += byte_to_octet( x )
+  return s
 
 ## Open  (or start)  communication with SCALE development board.
 ## Note the delay, which is intended to throttle (or slow down) communication
@@ -186,8 +189,7 @@ def board_rdln( fd ) :
     if( t == '\x0D' ) :
       break
     else:
-      #r += t
-      r = ''
+      r += t
 
   if   ( args.force_upper ) :
     r = r.upper()
@@ -227,13 +229,17 @@ def board_wrln( fd, x ) :
 
 def enc( bytes ):
   fd = board_open()
-  board_wrln(fd, "1")
+  board_wrln(fd, "01:01")
+  board_wrln(fd, byte_seq_to_octet_string(bytes))
+  board_wrln(fd, "01:01")
   r = board_rdln( fd )
 
   t_3 = r
   t_4 =                  octetstr2bytes( r )
   print( 't_3 =                      r     = {0:s}'.format( repr( t_3 ) ) )
-  print( 't_4 =      octetstr2bytes( r )   = {0:s}'.format( repr( t_4 ) ) )
+  print( 't_4 =      octetstr2bytes( r )   = ' + str(t_4) )
+
+  board_close( fd )
 
 ## Read  (or recieve) an array from SCALE development board, automatically 
 ##
@@ -694,3 +700,4 @@ if ( __name__ == '__main__' ) :
   #traces_st( 's1', t, s, M, C, T )
   enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
   #attack( len( sys.argv ), sys.argv )
+

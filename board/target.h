@@ -12,9 +12,9 @@
 
 #include <scale/scale.h>
 
-#define COMMAND_INSPECT ( 0x30 )
-#define COMMAND_ENCRYPT ( 0x31 )
-#define COMMAND_TEST    ( 0x32 )
+#define COMMAND_INSPECT ( 0x00 )
+#define COMMAND_ENCRYPT ( 0x01 )
+#define COMMAND_TEST    ( 0x02 )
 
 #define SIZEOF_BLK      (   16 )
 #define SIZEOF_KEY      (   16 )
