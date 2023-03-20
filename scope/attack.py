@@ -229,16 +229,17 @@ def board_wrln( fd, x ) :
 
 def enc( bytes ):
   fd = board_open()
-  board_wrln(fd, "01:01")
-  board_wrln(fd, byte_seq_to_octet_string(bytes))
-  board_wrln(fd, "01:01")
-  r = board_rdln( fd )
 
-  t_3 = r
-  t_4 =                  octetstr2bytes( r )
-  print( 't_3 =                      r     = {0:s}'.format( repr( t_3 ) ) )
-  print( 't_4 =      octetstr2bytes( r )   = ' + str(t_4) )
-
+  for i in range(0, 100):
+    m = generate_plaintext()
+    board_wrln(fd, "01:01")
+    board_wrln(fd, byte_seq_to_octet_string(m))
+    board_wrln(fd, "00:")
+    r = board_rdln( fd )
+    c =                  octetstr2bytes( r )
+    print( 'm = ' + byte_seq_to_octet_string(m))
+    print( 'c = ' + str(c) + '\n' )
+  
   board_close( fd )
 
 ## Read  (or recieve) an array from SCALE development board, automatically 
@@ -346,9 +347,9 @@ def acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min ):
     scope. runBlock ()
 
     # Pass encryption command, message and randomness inputs to target
-    board_wrbytes( fd, [ 0x31 ], 1 )
-    board_wrbytes( fd, m, SIZE_OF_BLK )
-    board_wrbytes( fd, [ 0x39 ], 1 )
+    board_wrln(fd, "01:01")
+    board_wrln(fd, byte_seq_to_octet_string(m))
+    board_wrln(fd, "00:")
   
     # Section 3.26 , Page 54; Step 6: wait for acquisition to complete
     while ( not scope . isReady () ) : time. sleep ( 1.0 )
@@ -367,7 +368,10 @@ def acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min ):
   # Phase 2 simply stores the acquired data (both channels A *and* B) into a
   # CSV - formated file named on the command line.
 
-  c = board_rdbytes(fd, SIZE_OF_BLK )
+  r = board_rdln( fd )
+  c =                  octetstr2bytes( r )
+  #print( 'm = ' + byte_seq_to_octet_string(m))
+  #print( 'c = ' + str(c) + '\n' )
 
   trace_A = []
   trace_B = []
@@ -375,10 +379,10 @@ def acquire_trace( scope, fd, m, num_samples, scope_adc_max, scope_adc_min ):
   
   for i in range( num_samples ) :
     A_i = ( float( A[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_A
-    B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_B
+    #B_i = ( float( B[ i ] ) / float ( scope_adc_max ) ) * SCOPE_RANGE_CHAN_B
     if A_i >= 2.0:
-      trace_A.append( A_i )
-      trace_B.append( B_i )
+      trace_A.append( A[ i ] )
+      trace_B.append( B[ i ] )
       trace_size += 1
 
   return c, trace_size, trace_A, trace_B
@@ -476,15 +480,15 @@ def traces_st( f, t, s, M, C, T ) :
 
   for i in range( t ) :
     for j in range( 16 ) :
-      wr( '<B', M[ i, j ] )
+      wr( '<B', M[ i ][ j ] )
 
   for i in range( t ) :
     for j in range( 16 ) :
-      wr( '<B', C[ i, j ] )
+      wr( '<B', C[ i ][ j ] )
 
   for i in range( t ) :
     for j in range( s  ) :
-      wr( '<h', T[ i, j ] )
+      wr( '<h', T[ i ][ j ] )
 
   fd.close()
 
@@ -667,7 +671,15 @@ def attack( argc, argv ) :
 
   print('\nGenerating PCC data for trace matrix')
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
-
+  board_wrln(fd, "01:01")
+  board_wrln(fd, byte_seq_to_octet_string(bytes))
+  board_wrln(fd, "00:")
+  
+  r = board_rdln( fd )
+  t_3 = r
+  t_4 =                  octetstr2bytes( r )
+  print( 't_3 =                      r     = {0:s}'.format( repr( t_3 ) ) )
+  print( 't_4 =      octetstr2bytes( r )   = ' + str(t_4) )
   K = []
   for i in range(0, SIZE_OF_KEY):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
@@ -683,21 +695,23 @@ def attack( argc, argv ) :
 
 if ( __name__ == '__main__' ) :
   parser = argparse.ArgumentParser()
-  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = True             )
-  parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'socket'             )
+  parser.add_argument( '--debug',         dest = 'debug',                     action = 'store_true',                            default = False             )
+  parser.add_argument( '--mode',          dest = 'mode',                      action = 'store', choices = [ 'uart', 'socket' ], default = 'uart'             )
   parser.add_argument( '--data',          dest = 'data',          type = str, action = 'store',                                 default = None               )
   parser.add_argument( '--uart',          dest = 'uart',          type = str, action = 'store',                                 default = '/dev/scale-board' )
   parser.add_argument( '--socket-host',   dest = 'socket_host',   type = str, action = 'store',                                 default = '127.0.0.1'              )
   parser.add_argument( '--socket-port',   dest = 'socket_port',   type = int, action = 'store',                                 default = '1234'               )
-  parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 0.0                )
-  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.0                )
-  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.0                )
+  parser.add_argument( '--throttle-open', dest = 'throttle_open', type = int, action = 'store',                                 default = 0.1                )
+  parser.add_argument( '--throttle-rd',   dest = 'throttle_rd',   type = int, action = 'store',                                 default = 0.1                )
+  parser.add_argument( '--throttle-wr',   dest = 'throttle_wr',   type = int, action = 'store',                                 default = 0.1                )
   parser.add_argument( '--force-upper',   dest = 'force_upper',               action = 'store_true',                            default = False              )
   parser.add_argument( '--force-lower',   dest = 'force_lower',               action = 'store_true',                            default = False              )
   args = parser.parse_args()
 
-  #t, s, M, C, T = acquire_encryption_traces(1000)
-  #traces_st( 's1', t, s, M, C, T )
-  enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
+  #t, s, M, C, T = traces_ld( '../stage2.dat' )
+  #print(T[0])
+  t, s, M, C, T = acquire_encryption_traces(1000)
+  traces_st( 'set1', t, s, M, C, T )
+  #enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
   #attack( len( sys.argv ), sys.argv )
 

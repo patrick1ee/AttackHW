@@ -272,6 +272,7 @@ int octetstr_rd( uint8_t* r, int n_r ) {
   char seperator = scale_uart_rd(SCALE_UART_MODE_BLOCKING);
 
   if( seperator != ':' || octet_to_byte ( &prefix, octet ) != 0 ) {
+    scale_uart_wr ( SCALE_UART_MODE_BLOCKING, octet[ 0 ] );
     return -1;
   }
 
@@ -423,6 +424,7 @@ int main( int argc, char* argv[] ) {
 
   while( true ) {
     if( 1 != octetstr_rd( cmd, 1 ) ) {
+      //octetstr_wr(cmd, 1);
       break;
     }
     switch( cmd[ 0 ] ) {
