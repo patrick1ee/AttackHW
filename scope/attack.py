@@ -545,8 +545,8 @@ def compress_trace_samples( T, t, s, n ):
 ## \return    H     t-by-h matrix of hypothesied traces
 ## \return    h     the number of hypothetical key bytes
 
-def generate_hypothesis_matrix( M, b, k, track=False ):
-  h = k
+def generate_hypothesis_matrix( M, b, track=False ):
+  h = 256
   H = []
   count = 0
   for m in M:
@@ -638,7 +638,7 @@ def disinguish_hypothesis( R, H, t, s, h, kb, H_cpf, H_cpf_sqrt, R_cpf, R_cpf_sq
   return C, max
 
 
-def output_correlation_graph(C):
+def output_correlation_graph(C, s):
   for i in range(0, len(C)):
     plt.plot(numpy.arange(0, s), C[i])
     plt.xlabel('Samples')
@@ -671,23 +671,18 @@ def attack( argc, argv ) :
 
   print('\nGenerating PCC data for trace matrix')
   T_cpf, T_cpf_sqrt = get_col_pearson_factors_matrix(T, True)
-  board_wrln(fd, "01:01")
-  board_wrln(fd, byte_seq_to_octet_string(bytes))
-  board_wrln(fd, "00:")
-  
-  r = board_rdln( fd )
-  t_3 = r
-  t_4 =                  octetstr2bytes( r )
-  print( 't_3 =                      r     = {0:s}'.format( repr( t_3 ) ) )
-  print( 't_4 =      octetstr2bytes( r )   = ' + str(t_4) )
+
   K = []
-  for i in range(0, SIZE_OF_KEY):
+  
+  for i in range(0, 1):
     print('\nGenerating hyptohesis matrix for byte ' + str(i + 1) + '/16')
-    h, H = generate_hypothesis_matrix( M, i, SIZE_OF_KEY, True )
+    h, H = generate_hypothesis_matrix( M, i, True )
     H_cpf, H_cpf_sqrt = get_col_pearson_factors_matrix(H)
 
     print('\nPerforming correlation analysis for byte ' + str(i + 1) + '/16')
     C, kb = disinguish_hypothesis( T, H, t, s, h, i, H_cpf, H_cpf_sqrt, T_cpf, T_cpf_sqrt, True )
+    output_correlation_graph(C, s)
+
     K.append(kb[0])
 
   print('\n\n' + str(K))
@@ -710,8 +705,8 @@ if ( __name__ == '__main__' ) :
 
   #t, s, M, C, T = traces_ld( '../stage2.dat' )
   #print(T[0])
-  t, s, M, C, T = acquire_encryption_traces(1000)
-  traces_st( 'set1', t, s, M, C, T )
+  #t, s, M, C, T = acquire_encryption_traces(1000)
+  #traces_st( 'set1', t, s, M, C, T )
   #enc([0x32, 0x43, 0xF6, 0xA8, 0x88, 0x5A, 0x30, 0x8D, 0x31, 0x31, 0x98, 0xA2, 0xE0, 0x37, 0x07, 0x34 ])
-  #attack( len( sys.argv ), sys.argv )
+  attack( len( sys.argv ), sys.argv )
 
